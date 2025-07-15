@@ -1,12 +1,77 @@
-# Social Forge 🎨
+# Pixel Forge 🎨
 
 > The complete image generation toolkit for modern web development
 
-Social Forge is a zero-dependency TypeScript package that generates optimized images for social media previews, favicons, SEO metadata, and PWA assets across **all major platforms** - from Facebook and Instagram to TikTok, WhatsApp, Discord, and emerging platforms like Threads and Bluesky.
+Pixel Forge is a zero-dependency TypeScript package that generates optimized images for social media previews, favicons, SEO metadata, and PWA assets across **all major platforms** - from Facebook and Instagram to TikTok, WhatsApp, Discord, and emerging platforms like Threads and Bluesky.
 
 **Perfect for web developers who want everything needed for modern web applications in one command.**
 
-## ✨ Why Social Forge?
+## 🚀 Quick Start
+
+### No Installation Required!
+
+```bash
+# Run directly with npx (recommended)
+npx pixel-forge generate logo.png --web
+```
+
+### Generate Everything for Your Website
+
+```bash
+# Generate all web assets (favicon, PWA, SEO)
+npx pixel-forge generate logo.png --web
+
+# Or use the short alias
+npx pforge generate logo.png --web
+```
+
+### Quick Usage Examples
+
+```bash
+# Initialize configuration
+npx pixel-forge init
+
+# Generate favicons only
+npx pixel-forge generate logo.png --favicon
+
+# Generate PWA assets
+npx pixel-forge generate logo.png --pwa
+
+# Generate SEO images
+npx pixel-forge generate logo.png --seo
+
+# Generate specific social media images
+npx pixel-forge generate logo.png --platform facebook,instagram,tiktok
+
+# Generate everything
+npx pixel-forge generate logo.png --all
+```
+
+### Optional: Install Globally
+
+```bash
+# For frequent use, install globally
+npm install -g pixel-forge
+
+# Then use without npx
+pixel-forge generate logo.png --web
+```
+
+### Programmatic Usage
+
+```typescript
+import { PixelForgeConfig, generateAll } from 'pixel-forge';
+
+const config: PixelForgeConfig = {
+  input: './logo.png',
+  outputDir: './assets',
+  // ... other options
+};
+
+await generateAll(config);
+```
+
+## ✨ Why Pixel Forge?
 
 - 🌍 **Complete Web Coverage** - Generates everything from favicons to social sharing images
 - 📱 **Modern Standards** - Supports PWA, OpenGraph, Twitter Cards, Apple Touch Icons, and more
@@ -337,7 +402,7 @@ metaTags.forEach(tag => {
 
 ## 🎨 Templates & Customization
 
-Social Forge includes smart templates that automatically optimize your content for each platform:
+Pixel Forge includes smart templates that automatically optimize your content for each platform:
 
 ```typescript
 await generator.generate({

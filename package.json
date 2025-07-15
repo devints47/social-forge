@@ -1,15 +1,20 @@
 {
-  "name": "social-forge",
+  "name": "pixel-forge",
   "version": "0.1.0",
   "description": "A comprehensive generator for social media previews, favicons, and visual assets across all platforms",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "social-forge": "dist/cli/index.js"
+    "pixel-forge": "dist/cli/index.js",
+    "pforge": "dist/cli/index.js"
   },
   "scripts": {
     "build": "tsc",
-    "test": "jest",
+    "build:watch": "tsc --watch",
+    "test": "jest --passWithNoTests",
+    "test:watch": "jest --watch",
+    "dev": "npm run build && node dist/cli/index.js",
+    "start": "node dist/cli/index.js",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "prepare": "npm run build",
@@ -26,29 +31,39 @@
     "social-cards",
     "icons",
     "visual-assets",
-    "pwa"
+    "pwa",
+    "instagram",
+    "facebook",
+    "linkedin",
+    "tiktok",
+    "seo",
+    "image-generation",
+    "typescript",
+    "cli",
+    "automation",
+    "web-development"
   ],
-  "author": "",
+  "author": "devin@devinops.com",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/devints47/social-forge.git"
+    "url": "git+https://github.com/devints47/pixel-forge.git"
   },
   "bugs": {
-    "url": "https://github.com/devints47/social-forge/issues"
+    "url": "https://github.com/devints47/pixel-forge/issues"
   },
-  "homepage": "https://github.com/devints47/social-forge#readme",
+  "homepage": "https://github.com/devints47/pixel-forge#readme",
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "eslint": "^8.0.0",
-    "jest": "^29.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
     "prettier": "^3.0.0",
     "rimraf": "^5.0.0",
-    "ts-jest": "^29.0.0",
-    "typescript": "^5.0.0"
+    "ts-jest": "^29.1.2",
+    "typescript": "~5.3.3"
   },
   "dependencies": {
     "@types/sharp": "^0.31.1",
@@ -60,5 +75,14 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/devints47"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ]
 }

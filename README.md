@@ -60,7 +60,7 @@ Social Forge is a zero-dependency TypeScript package that generates optimized im
 ## 🚀 Quick Start
 
 ```bash
-npm install social-forge
+npm install pixel-forge
 ```
 
 ### For Web Developers (Most Common Use Case)
@@ -69,15 +69,15 @@ Generate everything you need for a modern web application:
 
 ```bash
 # Complete web development package (favicon + PWA + SEO images)
-npx social-forge generate logo.png --web
+npx pixel-forge generate logo.png --web
 
 # Or generate specific web assets
-npx social-forge generate logo.png --seo      # OpenGraph & Twitter cards
-npx social-forge generate logo.png --favicon  # All favicon formats  
-npx social-forge generate logo.png --pwa      # PWA icons & manifest
+npx pixel-forge generate logo.png --seo      # OpenGraph & Twitter cards
+npx pixel-forge generate logo.png --favicon  # All favicon formats  
+npx pixel-forge generate logo.png --pwa      # PWA icons & manifest
 
 # Generate in both PNG and JPEG formats
-npx social-forge generate logo.png --web --format both
+npx pixel-forge generate logo.png --web --format both
 ```
 
 **Files generated for `--web`:**
@@ -151,41 +151,41 @@ export const metadata: Metadata = {
 Generate assets for specific platforms:
 ```bash
 # Major Social Networks
-npx social-forge generate logo.png --facebook    # Facebook (1200x630)
-npx social-forge generate logo.png --twitter     # Twitter/X (1200x600)
-npx social-forge generate logo.png --linkedin    # LinkedIn (1200x627)
-npx social-forge generate logo.png --instagram   # Instagram (all formats)
-npx social-forge generate logo.png --tiktok      # TikTok (1080x1920)
-npx social-forge generate logo.png --youtube     # YouTube (thumbnail + shorts)
-npx social-forge generate logo.png --pinterest   # Pinterest (pin + square)
+npx pixel-forge generate logo.png --facebook    # Facebook (1200x630)
+npx pixel-forge generate logo.png --twitter     # Twitter/X (1200x600)
+npx pixel-forge generate logo.png --linkedin    # LinkedIn (1200x627)
+npx pixel-forge generate logo.png --instagram   # Instagram (all formats)
+npx pixel-forge generate logo.png --tiktok      # TikTok (1080x1920)
+npx pixel-forge generate logo.png --youtube     # YouTube (thumbnail + shorts)
+npx pixel-forge generate logo.png --pinterest   # Pinterest (pin + square)
 
 # Messaging Apps
-npx social-forge generate logo.png --whatsapp    # WhatsApp (profile + preview)
-npx social-forge generate logo.png --discord     # Discord (1200x630)
-npx social-forge generate logo.png --telegram    # Telegram (1200x630)
-npx social-forge generate logo.png --signal      # Signal (1200x630)
-npx social-forge generate logo.png --slack       # Slack (1200x630)
-npx social-forge generate logo.png --imessage    # iMessage (1200x630)
-npx social-forge generate logo.png --androidrcs  # Android RCS (1200x630)
+npx pixel-forge generate logo.png --whatsapp    # WhatsApp (profile + preview)
+npx pixel-forge generate logo.png --discord     # Discord (1200x630)
+npx pixel-forge generate logo.png --telegram    # Telegram (1200x630)
+npx pixel-forge generate logo.png --signal      # Signal (1200x630)
+npx pixel-forge generate logo.png --slack       # Slack (1200x630)
+npx pixel-forge generate logo.png --imessage    # iMessage (1200x630)
+npx pixel-forge generate logo.png --androidrcs  # Android RCS (1200x630)
 
 # Emerging Platforms
-npx social-forge generate logo.png --threads     # Threads (1080x1080)
-npx social-forge generate logo.png --bluesky     # Bluesky (1200x630)
-npx social-forge generate logo.png --mastodon    # Mastodon (1200x630)
+npx pixel-forge generate logo.png --threads     # Threads (1080x1080)
+npx pixel-forge generate logo.png --bluesky     # Bluesky (1200x630)
+npx pixel-forge generate logo.png --mastodon    # Mastodon (1200x630)
 
 # Platform Categories
-npx social-forge generate logo.png --social      # Standard social (FB, Twitter, LinkedIn)
-npx social-forge generate logo.png --messaging   # All messaging platforms
-npx social-forge generate logo.png --platforms   # All video/visual platforms
+npx pixel-forge generate logo.png --social      # Standard social (FB, Twitter, LinkedIn)
+npx pixel-forge generate logo.png --messaging   # All messaging platforms
+npx pixel-forge generate logo.png --platforms   # All video/visual platforms
 
 # Generate everything
-npx social-forge generate logo.png --all
+npx pixel-forge generate logo.png --all
 ```
 
 ### Programmatic Usage
 
 ```typescript
-import { ComprehensiveSocialGenerator } from 'social-forge';
+import { ComprehensiveSocialGenerator } from 'pixel-forge';
 
 const generator = new ComprehensiveSocialGenerator('./my-logo.png', {
   appName: 'My Awesome App',
@@ -253,7 +253,7 @@ import {
   InstagramGenerator,
   TikTokGenerator, 
   WhatsAppGenerator 
-} from 'social-forge';
+} from 'pixel-forge';
 
 // Facebook only
 const facebook = new FacebookGenerator('./logo.png', config);
@@ -286,7 +286,7 @@ await whatsapp.generate();
 
 ```typescript
 // app/layout.tsx or pages/_app.tsx
-import { generateMetadata } from 'social-forge/next';
+import { generateMetadata } from 'pixel-forge/next';
 
 export const metadata = generateMetadata({
   title: 'My App',
@@ -403,29 +403,29 @@ Check out the `/examples` directory for complete demos:
 
 ```bash
 # Initialize new project
-npx social-forge init my-project
+npx pixel-forge init my-project
 
 # Generate for all platforms
-npx social-forge generate ./logo.png --all
+npx pixel-forge generate ./logo.png --all
 
 # Individual platforms
-npx social-forge generate ./logo.png --facebook --twitter --linkedin
-npx social-forge generate ./logo.png --tiktok --whatsapp --instagram
+npx pixel-forge generate ./logo.png --facebook --twitter --linkedin
+npx pixel-forge generate ./logo.png --tiktok --whatsapp --instagram
 
 # Platform categories
-npx social-forge generate ./logo.png --social --messaging --platforms
+npx pixel-forge generate ./logo.png --social --messaging --platforms
 
 # Technical assets
-npx social-forge generate ./logo.png --favicon --pwa
+npx pixel-forge generate ./logo.png --favicon --pwa
 
 # Custom configuration
-npx social-forge generate ./logo.png --config ./social-forge.config.json
+npx pixel-forge generate ./logo.png --config ./pixel-forge.config.json
 
 # Generate HTML meta tags
-npx social-forge meta ./logo.png
+npx pixel-forge meta ./logo.png
 
 # Show platform coverage
-npx social-forge info
+npx pixel-forge info
 ```
 
 ## 📚 API Reference

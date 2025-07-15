@@ -13,9 +13,10 @@ import { InstagramGenerator } from '../generators/social/instagram';
 import { FaviconGenerator } from '../generators/favicon/favicon';
 import { PWAGenerator } from '../generators/pwa/pwa';
 import { WebSEOGenerator } from '../generators/web/seo';
-import { ConfigValidator, type PixelForgeConfig } from '../core/config-validator';
+import { type PixelForgeConfig } from '../core/config-validator';
 
-const packageJson = require('../../package.json');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const packageJson = require('../../package.json') as { name: string; version: string };
 
 interface CLIOptions {
   output?: string;
@@ -82,7 +83,7 @@ async function loadConfig(configPath?: string, options: CLIOptions = {}): Promis
     socialPreview: {
       title: options.title || config.socialPreview?.title || config.appName || 'My App',
       description: options.description || config.socialPreview?.description || config.description || '',
-      template: (options.template as any) || config.socialPreview?.template || 'basic'
+      template: (options.template as 'basic' | 'gradient' | 'custom') || config.socialPreview?.template || 'basic'
     },
 
     platforms: {
@@ -142,7 +143,7 @@ async function generateAll(sourceImage: string, config: PixelForgeConfig, option
   
   if (options.verbose) {
     console.log('\nGenerated files:');
-    files.forEach(file => console.log(`  �� ${file}`));
+    files.forEach(file => console.log(`  📄 ${file}`));
   }
 }
 
@@ -150,7 +151,13 @@ async function generateAll(sourceImage: string, config: PixelForgeConfig, option
  * Generate specific platform assets
  */
 async function generateSpecific(sourceImage: string, config: PixelForgeConfig, options: CLIOptions) {
-  const generators: Array<{ name: string; generator: any; files: string[] }> = [];
+  interface GeneratorInfo {
+    name: string;
+    generator: FacebookGenerator | TwitterGenerator | LinkedInGenerator | InstagramGenerator | TikTokGenerator | WhatsAppGenerator | ComprehensiveSocialGenerator | FaviconGenerator | PWAGenerator | WebSEOGenerator;
+    files: string[];
+  }
+  
+  const generators: GeneratorInfo[] = [];
 
   // Social media platforms
   if (options.facebook) {
@@ -476,6 +483,7 @@ async function generateSpecific(sourceImage: string, config: PixelForgeConfig, o
 /**
  * Show meta tags for generated assets
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function showMetaTags(sourceImage: string, config: PixelForgeConfig, options: CLIOptions) {
   console.log('🏷️  HTML Meta Tags:\n');
 

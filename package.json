@@ -6,8 +6,7 @@
   "types": "dist/index.d.ts",
   "bin": {
     "pixel-forge": "dist/cli/index.js",
-    "pxl": "dist/cli/index.js",
-    "forge": "dist/cli/index.js"
+    "pforge": "dist/cli/index.js"
   },
   "scripts": {
     "build": "tsc",

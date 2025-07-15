@@ -9,6 +9,9 @@ build/
 
 # Testing
 coverage/
+test-assets/
+test-project/
+public/images/
 
 # Debug
 npm-debug.log*

@@ -1,0 +1,106 @@
+name: Publish Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+        - patch
+        - minor
+        - major
+        - prerelease
+      tag:
+        description: 'Prerelease tag (for prerelease only)'
+        required: false
+        default: 'beta'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        registry-url: 'https://registry.npmjs.org'
+        cache: 'npm'
+    
+    - name: Configure Git
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run tests
+      run: npm test
+    
+    - name: Run linting
+      run: npm run lint
+    
+    - name: Build project
+      run: npm run build
+    
+    - name: Bump version (patch/minor/major)
+      if: github.event.inputs.version != 'prerelease'
+      run: npm version ${{ github.event.inputs.version }} --no-git-tag-version
+    
+    - name: Bump version (prerelease)
+      if: github.event.inputs.version == 'prerelease'
+      run: npm version prerelease --preid=${{ github.event.inputs.tag }} --no-git-tag-version
+    
+    - name: Get package version
+      id: package-version
+      run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+    
+    - name: Commit version bump
+      run: |
+        git add package.json
+        git commit -m "chore: bump version to v${{ steps.package-version.outputs.version }}"
+        git tag v${{ steps.package-version.outputs.version }}
+    
+    - name: Push changes
+      run: |
+        git push origin main
+        git push origin v${{ steps.package-version.outputs.version }}
+    
+    - name: Publish to npm
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.package-version.outputs.version }}
+        release_name: Release v${{ steps.package-version.outputs.version }}
+        body: |
+          ## Changes in v${{ steps.package-version.outputs.version }}
+          
+          - Automated release via GitHub Actions
+          - Version bump: ${{ github.event.inputs.version }}
+          
+          ### Installation
+          ```bash
+          npm install -g pixel-forge@${{ steps.package-version.outputs.version }}
+          ```
+          
+          ### CLI Commands
+          - `pixel-forge` - Main command
+          - `pforge` - Short alias
+        draft: false
+        prerelease: ${{ github.event.inputs.version == 'prerelease' }} 

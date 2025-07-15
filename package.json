@@ -1,12 +1,13 @@
 {
   "name": "pixel-forge",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "A comprehensive generator for social media previews, favicons, and visual assets across all platforms",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
     "pixel-forge": "dist/cli/index.js",
-    "pforge": "dist/cli/index.js"
+    "pxl": "dist/cli/index.js",
+    "forge": "dist/cli/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -81,7 +82,11 @@
     "url": "https://github.com/sponsors/devints47"
   },
   "files": [
-    "dist/**/*",
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "!dist/**/__tests__/**",
+    "!dist/**/*.test.*",
+    "!dist/**/*.spec.*",
     "README.md",
     "LICENSE"
   ]

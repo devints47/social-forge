@@ -1,0 +1,42 @@
+# Source files
+src/
+*.ts
+tsconfig.json
+
+# Git and GitHub
+.git/
+.github/
+
+# Testing and development
+tests/
+test-assets/
+test-project/
+examples/
+coverage/
+*.log
+.eslintrc.json
+jest.config.js
+**/__tests__/
+**/*.test.*
+**/*.spec.*
+
+# Dependencies and cache
+node_modules/
+.npm
+.pnpm-store/
+
+# Environment and config
+.env
+.env.*
+scripts/
+
+# Generated test assets
+public/
+
+# Development files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/ 

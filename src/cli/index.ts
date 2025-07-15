@@ -13,7 +13,7 @@ import { InstagramGenerator } from '../generators/social/instagram';
 import { FaviconGenerator } from '../generators/favicon/favicon';
 import { PWAGenerator } from '../generators/pwa/pwa';
 import { WebSEOGenerator } from '../generators/web/seo';
-import { ConfigValidator, type SocialForgeConfig } from '../core/config-validator';
+import { ConfigValidator, type PixelForgeConfig } from '../core/config-validator';
 
 const packageJson = require('../../package.json');
 
@@ -59,8 +59,8 @@ interface CLIOptions {
 /**
  * Load configuration from file or use defaults
  */
-async function loadConfig(configPath?: string, options: CLIOptions = {}): Promise<SocialForgeConfig> {
-  let config: Partial<SocialForgeConfig> = {};
+async function loadConfig(configPath?: string, options: CLIOptions = {}): Promise<PixelForgeConfig> {
+  let config: Partial<PixelForgeConfig> = {};
 
   // Load config file if specified
   if (configPath) {
@@ -73,7 +73,7 @@ async function loadConfig(configPath?: string, options: CLIOptions = {}): Promis
   }
 
   // Override with CLI options
-  const finalConfig: SocialForgeConfig = {
+  const finalConfig: PixelForgeConfig = {
     appName: config.appName || options.title || 'My App',
     description: config.description || options.description || 'Generated with Social Forge',
     themeColor: config.themeColor || options.themeColor || '#000000',
@@ -105,7 +105,7 @@ async function loadConfig(configPath?: string, options: CLIOptions = {}): Promis
 /**
  * Generate all assets
  */
-async function generateAll(sourceImage: string, config: SocialForgeConfig, options: CLIOptions) {
+async function generateAll(sourceImage: string, config: PixelForgeConfig, options: CLIOptions) {
   console.log('🚀 Generating all assets...\n');
 
   const generator = new ComprehensiveSocialGenerator(sourceImage, config);
@@ -149,7 +149,7 @@ async function generateAll(sourceImage: string, config: SocialForgeConfig, optio
 /**
  * Generate specific platform assets
  */
-async function generateSpecific(sourceImage: string, config: SocialForgeConfig, options: CLIOptions) {
+async function generateSpecific(sourceImage: string, config: PixelForgeConfig, options: CLIOptions) {
   const generators: Array<{ name: string; generator: any; files: string[] }> = [];
 
   // Social media platforms
@@ -476,7 +476,7 @@ async function generateSpecific(sourceImage: string, config: SocialForgeConfig, 
 /**
  * Show meta tags for generated assets
  */
-async function showMetaTags(sourceImage: string, config: SocialForgeConfig, options: CLIOptions) {
+async function showMetaTags(sourceImage: string, config: PixelForgeConfig, options: CLIOptions) {
   console.log('🏷️  HTML Meta Tags:\n');
 
   const generators = [
@@ -511,8 +511,8 @@ async function initProject(directory: string = '.') {
   // Create directory if it doesn't exist
   await fs.mkdir(directory, { recursive: true });
 
-  const configPath = path.join(directory, 'social-forge.config.json');
-  const defaultConfig: SocialForgeConfig = {
+  const configPath = path.join(directory, 'pixel-forge.config.json');
+  const defaultConfig: PixelForgeConfig = {
     appName: 'My App',
     description: 'My awesome application',
     themeColor: '#000000',
@@ -541,14 +541,14 @@ async function initProject(directory: string = '.') {
   console.log(`✅ Created configuration file: ${configPath}`);
   
   console.log('\n📋 Next steps:');
-  console.log('  1. Edit social-forge.config.json with your app details');
-  console.log('  2. Run: npx social-forge generate ./logo.png --all');
+  console.log('  1. Edit pixel-forge.config.json with your app details');
+  console.log('  2. Run: npx pixel-forge generate ./logo.png --all');
   console.log('  3. Add the generated meta tags to your HTML');
 }
 
 // CLI Program setup
 program
-  .name('social-forge')
+  .name('pixel-forge')
   .description('Generate comprehensive social media assets, favicons, and PWA icons')
   .version(packageJson.version);
 
@@ -671,10 +671,10 @@ program
     console.log('🌍 Social Forge - Complete Web Development Toolkit\n');
     
     console.log('🚀 Quick Start for Web Developers:');
-    console.log('  npx social-forge generate logo.png --web     # Complete web package');
-    console.log('  npx social-forge generate logo.png --seo     # SEO & social sharing');
-    console.log('  npx social-forge generate logo.png --favicon # All favicon formats');
-    console.log('  npx social-forge generate logo.png --pwa     # PWA assets');
+    console.log('  npx pixel-forge generate logo.png --web     # Complete web package');
+    console.log('  npx pixel-forge generate logo.png --seo     # SEO & social sharing');
+    console.log('  npx pixel-forge generate logo.png --favicon # All favicon formats');
+    console.log('  npx pixel-forge generate logo.png --pwa     # PWA assets');
     
     console.log('\n🔧 Web Development Assets:');
     console.log('  ✅ SEO Images - OpenGraph (og-image.png), Twitter Cards');
@@ -714,10 +714,10 @@ program
     console.log('  • TypeScript-first with full type safety');
     
     console.log('\n🎯 Platform-Specific Generation:');
-    console.log('  npx social-forge generate logo.png --facebook --twitter    # Multiple platforms');
-    console.log('  npx social-forge generate logo.png --messaging             # All messaging apps');
-    console.log('  npx social-forge generate logo.png --platforms             # Video platforms');
-    console.log('  npx social-forge generate logo.png --all                   # Everything');
+    console.log('  npx pixel-forge generate logo.png --facebook --twitter    # Multiple platforms');
+    console.log('  npx pixel-forge generate logo.png --messaging             # All messaging apps');
+    console.log('  npx pixel-forge generate logo.png --platforms             # Video platforms');
+    console.log('  npx pixel-forge generate logo.png --all                   # Everything');
     
     console.log('\n💡 Perfect for:');
     console.log('  • Next.js, React, Vue, Angular applications');

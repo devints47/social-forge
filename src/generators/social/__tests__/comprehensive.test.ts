@@ -5,10 +5,10 @@ import { ComprehensiveSocialGenerator } from '../comprehensive';
 import { InstagramGenerator } from '../instagram';
 import { MessagingGenerator } from '../messaging';
 import { PlatformGenerator } from '../platforms';
-import type { SocialForgeConfig } from '../../../core/config-validator';
+import type { PixelForgeConfig } from '../../../core/config-validator';
 
 describe('Comprehensive Social Media Generators', () => {
-  const testConfig: SocialForgeConfig = {
+  const testConfig: PixelForgeConfig = {
     appName: 'Test App',
     description: 'Test Description',
     themeColor: '#ffffff',

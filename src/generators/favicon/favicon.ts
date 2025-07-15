@@ -1,7 +1,7 @@
 import path from 'path';
 import { promises as fs } from 'fs';
 import { ImageProcessor, ImageSizes } from '../../core/image-processor';
-import type { SocialForgeConfig } from '../../core/config-validator';
+import type { PixelForgeConfig } from '../../core/config-validator';
 
 export interface FaviconOptions {
   includeICO?: boolean;
@@ -14,10 +14,10 @@ export interface FaviconOptions {
 }
 
 export class FaviconGenerator {
-  private config: SocialForgeConfig;
+  private config: PixelForgeConfig;
   private sourceImage: string;
 
-  constructor(sourceImage: string, config: SocialForgeConfig) {
+  constructor(sourceImage: string, config: PixelForgeConfig) {
     this.config = config;
     this.sourceImage = sourceImage;
   }

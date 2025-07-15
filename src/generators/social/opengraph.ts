@@ -1,6 +1,6 @@
 import path from 'path';
 import { ImageProcessor, ImageSizes } from '../../core/image-processor';
-import type { SocialForgeConfig } from '../../core/config-validator';
+import type { PixelForgeConfig } from '../../core/config-validator';
 
 export interface OpenGraphOptions {
   title?: string;
@@ -11,10 +11,10 @@ export interface OpenGraphOptions {
 }
 
 export class OpenGraphGenerator {
-  private config: SocialForgeConfig;
+  private config: PixelForgeConfig;
   private processor: ImageProcessor;
 
-  constructor(sourceImage: string, config: SocialForgeConfig) {
+  constructor(sourceImage: string, config: PixelForgeConfig) {
     this.config = config;
     this.processor = new ImageProcessor(sourceImage);
   }

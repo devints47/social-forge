@@ -1,6 +1,6 @@
 import path from 'path';
 import { ImageProcessor, ImageSizes } from '../../core/image-processor';
-import type { SocialForgeConfig } from '../../core/config-validator';
+import type { PixelForgeConfig } from '../../core/config-validator';
 
 export interface PlatformOptions {
   title?: string;
@@ -16,10 +16,10 @@ export interface PlatformOptions {
 }
 
 export class PlatformGenerator {
-  private config: SocialForgeConfig;
+  private config: PixelForgeConfig;
   private sourceImage: string;
 
-  constructor(sourceImage: string, config: SocialForgeConfig) {
+  constructor(sourceImage: string, config: PixelForgeConfig) {
     this.config = config;
     this.sourceImage = sourceImage;
   }

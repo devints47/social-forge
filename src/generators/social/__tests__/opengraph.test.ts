@@ -2,10 +2,10 @@ import path from 'path';
 import fs from 'fs/promises';
 import { OpenGraphGenerator } from '../opengraph';
 import { ImageSizes } from '../../../core/image-processor';
-import type { SocialForgeConfig } from '../../../core/config-validator';
+import type { PixelForgeConfig } from '../../../core/config-validator';
 
 describe('OpenGraphGenerator', () => {
-  const testConfig: SocialForgeConfig = {
+  const testConfig: PixelForgeConfig = {
     appName: 'Test App',
     themeColor: '#000000',
     backgroundColor: '#ffffff',

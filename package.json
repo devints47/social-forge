@@ -39,6 +39,7 @@
   },
   "homepage": "https://github.com/devints47/social-forge#readme",
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
@@ -50,13 +51,14 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "sharp": "^0.33.0",
-    "commander": "^11.0.0",
+    "@types/sharp": "^0.31.1",
     "chalk": "^5.0.0",
+    "commander": "^11.0.0",
+    "conf": "^11.0.0",
     "ora": "^7.0.0",
-    "conf": "^11.0.0"
+    "sharp": "^0.33.5"
   },
   "engines": {
     "node": ">=18.0.0"
   }
-} 
+}

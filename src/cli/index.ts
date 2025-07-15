@@ -12,6 +12,7 @@ import { WhatsAppGenerator } from '../generators/social/whatsapp';
 import { InstagramGenerator } from '../generators/social/instagram';
 import { FaviconGenerator } from '../generators/favicon/favicon';
 import { PWAGenerator } from '../generators/pwa/pwa';
+import { WebSEOGenerator } from '../generators/web/seo';
 import { ConfigValidator, type SocialForgeConfig } from '../core/config-validator';
 
 const packageJson = require('../../package.json');
@@ -21,6 +22,7 @@ interface CLIOptions {
   config?: string;
   quality?: string;
   prefix?: string;
+  format?: string;
   all?: boolean;
   social?: boolean;
   facebook?: boolean;
@@ -44,6 +46,8 @@ interface CLIOptions {
   platforms?: boolean;
   favicon?: boolean;
   pwa?: boolean;
+  seo?: boolean;
+  web?: boolean;
   title?: string;
   description?: string;
   themeColor?: string;
@@ -121,17 +125,24 @@ async function generateAll(sourceImage: string, config: SocialForgeConfig, optio
   const pwaGenerator = new PWAGenerator(sourceImage, config);
   await pwaGenerator.generate();
 
+  // Generate SEO assets
+  const seoGenerator = new WebSEOGenerator(sourceImage, config);
+  await seoGenerator.generate({ 
+    outputFormat: (options.format as 'png' | 'jpeg' | 'both') || 'png' 
+  });
+
   const files = [
     ...await generator.getGeneratedFiles(),
     ...faviconGenerator.getGeneratedFiles(),
-    ...pwaGenerator.getGeneratedFiles()
+    ...pwaGenerator.getGeneratedFiles(),
+    ...seoGenerator.getGeneratedFiles()
   ];
 
   console.log(`✅ Generated ${files.length} files in ${config.output.path}`);
   
   if (options.verbose) {
     console.log('\nGenerated files:');
-    files.forEach(file => console.log(`  📄 ${file}`));
+    files.forEach(file => console.log(`  �� ${file}`));
   }
 }
 
@@ -306,6 +317,83 @@ async function generateSpecific(sourceImage: string, config: SocialForgeConfig, 
     generators.push({ name: 'Slack', generator, files: ['slack.png'] });
   }
 
+  if (options.androidrcs) {
+    const generator = new ComprehensiveSocialGenerator(sourceImage, config);
+    await generator.generate({
+      includeStandard: false,
+      includeInstagram: false,
+      includeMessaging: true,
+      includePlatforms: false,
+      platforms: {
+        androidRCS: true,
+        whatsapp: false,
+        discord: false,
+        telegram: false,
+        signal: false,
+        slack: false,
+        imessage: false
+      }
+    });
+    generators.push({ name: 'Android RCS', generator, files: ['android-rcs.png'] });
+  }
+
+  if (options.threads) {
+    const generator = new ComprehensiveSocialGenerator(sourceImage, config);
+    await generator.generate({
+      includeStandard: false,
+      includeInstagram: false,
+      includeMessaging: false,
+      includePlatforms: true,
+      platforms: {
+        threads: true,
+        youtube: false,
+        tiktok: false,
+        pinterest: false,
+        bluesky: false,
+        mastodon: false
+      }
+    });
+    generators.push({ name: 'Threads', generator, files: ['threads.png'] });
+  }
+
+  if (options.bluesky) {
+    const generator = new ComprehensiveSocialGenerator(sourceImage, config);
+    await generator.generate({
+      includeStandard: false,
+      includeInstagram: false,
+      includeMessaging: false,
+      includePlatforms: true,
+      platforms: {
+        threads: false,
+        youtube: false,
+        tiktok: false,
+        pinterest: false,
+        bluesky: true,
+        mastodon: false
+      }
+    });
+    generators.push({ name: 'Bluesky', generator, files: ['bluesky.png'] });
+  }
+
+  if (options.mastodon) {
+    const generator = new ComprehensiveSocialGenerator(sourceImage, config);
+    await generator.generate({
+      includeStandard: false,
+      includeInstagram: false,
+      includeMessaging: false,
+      includePlatforms: true,
+      platforms: {
+        threads: false,
+        youtube: false,
+        tiktok: false,
+        pinterest: false,
+        bluesky: false,
+        mastodon: true
+      }
+    });
+    generators.push({ name: 'Mastodon', generator, files: ['mastodon.png'] });
+  }
+
   // Category generators
   if (options.social) {
     const generator = new ComprehensiveSocialGenerator(sourceImage, config);
@@ -335,6 +423,38 @@ async function generateSpecific(sourceImage: string, config: SocialForgeConfig, 
     const generator = new PWAGenerator(sourceImage, config);
     await generator.generate();
     generators.push({ name: 'PWA Assets', generator, files: generator.getGeneratedFiles() });
+  }
+
+  if (options.seo) {
+    const generator = new WebSEOGenerator(sourceImage, config);
+    await generator.generate({ 
+      outputFormat: (options.format as 'png' | 'jpeg' | 'both') || 'png' 
+    });
+    generators.push({ name: 'SEO Assets', generator, files: generator.getGeneratedFiles() });
+  }
+
+  if (options.web) {
+    // Generate complete web development package
+    const faviconGenerator = new FaviconGenerator(sourceImage, config);
+    await faviconGenerator.generate();
+    
+    const pwaGenerator = new PWAGenerator(sourceImage, config);
+    await pwaGenerator.generate();
+    
+    const seoGenerator = new WebSEOGenerator(sourceImage, config);
+    await seoGenerator.generate({ 
+      outputFormat: (options.format as 'png' | 'jpeg' | 'both') || 'png' 
+    });
+    
+    generators.push({ 
+      name: 'Web Development Package', 
+      generator: seoGenerator, 
+      files: [
+        ...faviconGenerator.getGeneratedFiles(),
+        ...pwaGenerator.getGeneratedFiles(),
+        ...seoGenerator.getGeneratedFiles()
+      ] 
+    });
   }
 
   // Summary
@@ -440,6 +560,7 @@ program
   .option('-c, --config <path>', 'Config file path')
   .option('-q, --quality <number>', 'Image quality (1-100)', '90')
   .option('-p, --prefix <path>', 'URL prefix for generated files', '/images/')
+  .option('-f, --format <format>', 'Output format (png|jpeg|both)', 'png')
   .option('--all', 'Generate all asset types')
   .option('--social', 'Generate standard social media assets (Facebook, Twitter, LinkedIn)')
   .option('--facebook', 'Generate Facebook assets only')
@@ -463,6 +584,8 @@ program
   .option('--platforms', 'Generate video/visual platform assets')
   .option('--favicon', 'Generate favicon assets only')
   .option('--pwa', 'Generate PWA assets only')
+  .option('--seo', 'Generate SEO/OpenGraph assets only')
+  .option('--web', 'Generate complete web development package (favicon + PWA + SEO)')
   .option('-t, --title <text>', 'App title')
   .option('-d, --description <text>', 'App description')
   .option('--theme-color <color>', 'Theme color (hex)', '#000000')
@@ -494,7 +617,7 @@ program
                  options.imessage || options.discord || options.telegram || options.signal ||
                  options.slack || options.androidrcs || options.threads || options.bluesky ||
                  options.mastodon || options.social || options.messaging || 
-                 options.platforms || options.favicon || options.pwa) {
+                 options.platforms || options.favicon || options.pwa || options.seo || options.web) {
         await generateSpecific(sourcePath, config, options);
       } else {
         // Default: generate standard social media assets
@@ -545,9 +668,22 @@ program
   .command('info')
   .description('Show platform coverage and capabilities')
   .action(() => {
-    console.log('🌍 Social Forge Platform Coverage\n');
+    console.log('🌍 Social Forge - Complete Web Development Toolkit\n');
     
-    console.log('📱 Major Social Networks:');
+    console.log('🚀 Quick Start for Web Developers:');
+    console.log('  npx social-forge generate logo.png --web     # Complete web package');
+    console.log('  npx social-forge generate logo.png --seo     # SEO & social sharing');
+    console.log('  npx social-forge generate logo.png --favicon # All favicon formats');
+    console.log('  npx social-forge generate logo.png --pwa     # PWA assets');
+    
+    console.log('\n🔧 Web Development Assets:');
+    console.log('  ✅ SEO Images - OpenGraph (og-image.png), Twitter Cards');
+    console.log('  ✅ Favicons - ICO, PNG, SVG, Apple Touch Icons');
+    console.log('  ✅ PWA Assets - App icons, manifest.json, splash screens');
+    console.log('  ✅ Safari Support - Pinned tab SVG, Apple optimizations');
+    console.log('  ✅ Microsoft Support - Windows tiles, browserconfig.xml');
+    
+    console.log('\n📱 Major Social Networks:');
     console.log('  ✅ Facebook (1200x630) - OpenGraph optimized');
     console.log('  ✅ Twitter/X (1200x600) - Twitter Cards support');
     console.log('  ✅ LinkedIn (1200x627) - Professional networking');
@@ -558,30 +694,37 @@ program
     
     console.log('\n💬 Messaging Applications:');
     console.log('  ✅ WhatsApp (400x400 + Preview) - Profile and sharing');
-    console.log('  ✅ iMessage (1200x630) - Apple ecosystem');
-    console.log('  ✅ Discord (1200x630) - Gaming community');
-    console.log('  ✅ Telegram (1200x630) - Secure messaging');
+    console.log('  ✅ iMessage (1200x630) - iOS sharing');
+    console.log('  ✅ Discord (1200x630) - Server sharing');
+    console.log('  ✅ Telegram (1200x630) - Message sharing');
     console.log('  ✅ Signal (1200x630) - Privacy-focused');
     console.log('  ✅ Slack (1200x630) - Workplace communication');
+    console.log('  ✅ Android RCS (1200x630) - Rich messaging');
     
-    console.log('\n🔧 Technical Assets:');
-    console.log('  ✅ Favicons - All sizes and formats (ICO, PNG, SVG)');
-    console.log('  ✅ PWA Icons - App icons, splash screens, manifest');
-    console.log('  ✅ Apple Touch Icons - iOS optimization');
-    console.log('  ✅ Android Icons - Material Design compliance');
-    console.log('  ✅ Windows Tiles - Microsoft Store support');
+    console.log('\n🌟 Emerging Platforms:');
+    console.log('  ✅ Threads (1080x1080) - Meta\'s Twitter alternative');
+    console.log('  ✅ Bluesky (1200x630) - Decentralized social network');
+    console.log('  ✅ Mastodon (1200x630) - Federated social media');
     
     console.log('\n📊 Statistics:');
     console.log('  • 25+ platform formats supported');
+    console.log('  • Complete web development coverage');
     console.log('  • Zero external dependencies (uses Sharp)');
     console.log('  • Framework-agnostic with Next.js helpers');
     console.log('  • TypeScript-first with full type safety');
     
-    console.log('\n🚀 Getting Started:');
-    console.log('  npx social-forge init          # Initialize project');
-    console.log('  npx social-forge generate logo.png --all  # Generate everything');
-    console.log('  npx social-forge generate logo.png --facebook --twitter  # Specific platforms');
-    console.log('  npx social-forge meta logo.png  # Show meta tags');
+    console.log('\n🎯 Platform-Specific Generation:');
+    console.log('  npx social-forge generate logo.png --facebook --twitter    # Multiple platforms');
+    console.log('  npx social-forge generate logo.png --messaging             # All messaging apps');
+    console.log('  npx social-forge generate logo.png --platforms             # Video platforms');
+    console.log('  npx social-forge generate logo.png --all                   # Everything');
+    
+    console.log('\n💡 Perfect for:');
+    console.log('  • Next.js, React, Vue, Angular applications');
+    console.log('  • Static sites (Gatsby, Nuxt, SvelteKit)');
+    console.log('  • Progressive Web Apps (PWAs)');
+    console.log('  • E-commerce and marketing sites');
+    console.log('  • Any web application needing social sharing');
   });
 
 // Parse CLI arguments

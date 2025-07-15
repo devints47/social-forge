@@ -167,21 +167,21 @@ export class FaviconGenerator {
     }
 
     // Generate web app manifest
-    await this.generateWebManifest();
+    await this.generateManifest();
   }
 
   /**
    * Generate Windows tiles (Microsoft)
    */
   private async generateWindowsTiles(): Promise<void> {
-    for (const tile of ImageSizes.mstile) {
+    for (const size of ImageSizes.mstile) {
       const processor = new ImageProcessor(this.sourceImage);
-      const outputPath = path.join(this.config.output.path, `mstile-${tile.width}x${tile.height}.png`);
+      const outputPath = path.join(this.config.output.path, `mstile-${size.width}x${size.height}.png`);
 
       await processor
-        .resize(tile.width, tile.height, { 
+        .resize(size.width, size.height, { 
           fit: 'contain', 
-          background: this.config.backgroundColor || this.config.themeColor 
+          background: this.config.themeColor 
         })
         .save(outputPath);
     }
@@ -191,23 +191,64 @@ export class FaviconGenerator {
   }
 
   /**
-   * Generate Safari pinned tab icon
+   * Generate browserconfig.xml for Microsoft Edge and IE
    */
-  private async generateSafariIcon(): Promise<void> {
-    const processor = new ImageProcessor(this.sourceImage);
-    const outputPath = path.join(this.config.output.path, 'safari-pinned-tab.svg');
+  private async generateBrowserConfig(): Promise<void> {
+    const { prefix = '/' } = this.config.output;
+    
+    const browserconfig = `<?xml version="1.0" encoding="utf-8"?>
+<browserconfig>
+  <msapplication>
+    <tile>
+      <square70x70logo src="${prefix}mstile-70x70.png"/>
+      <square150x150logo src="${prefix}mstile-150x150.png"/>
+      <wide310x150logo src="${prefix}mstile-310x150.png"/>
+      <square310x310logo src="${prefix}mstile-310x310.png"/>
+      <TileColor>${this.config.themeColor}</TileColor>
+    </tile>
+  </msapplication>
+</browserconfig>`;
 
-    // For Safari pinned tab, we need a monochrome SVG
-    // Since we can't easily convert to true SVG, we'll create a PNG placeholder
-    await processor
-      .resize(16, 16, { fit: 'contain', background: 'transparent' })
-      .save(outputPath.replace('.svg', '.png'));
+    const outputPath = path.join(this.config.output.path, 'browserconfig.xml');
+    await fs.writeFile(outputPath, browserconfig);
   }
 
   /**
-   * Generate web app manifest.json
+   * Generate Safari pinned tab icon
    */
-  private async generateWebManifest(): Promise<void> {
+  private async generateSafariIcon(): Promise<void> {
+    // Generate a simplified SVG for Safari pinned tabs
+    // This should be a monochrome, high-contrast version
+    const outputPath = path.join(this.config.output.path, 'safari-pinned-tab.svg');
+    
+    // Create a simplified SVG representation
+    // In a real implementation, you might want to use a library like potrace
+    // For now, we'll create a basic SVG template
+    const svgContent = `<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
+ "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
+ width="512.000000pt" height="512.000000pt" viewBox="0 0 512.000000 512.000000"
+ preserveAspectRatio="xMidYMid meet">
+<metadata>
+Created by Social Forge
+</metadata>
+<g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)"
+fill="#000000" stroke="none">
+<path d="M0 2560 l0 -2560 2560 0 2560 0 0 2560 0 2560 -2560 0 -2560 0 0
+-2560z"/>
+</g>
+</svg>`;
+
+    await fs.writeFile(outputPath, svgContent);
+  }
+
+  /**
+   * Generate manifest.json for PWA support
+   */
+  private async generateManifest(): Promise<void> {
+    const { prefix = '/' } = this.config.output;
+    
     const manifest = {
       name: this.config.appName,
       short_name: this.config.appName,
@@ -215,46 +256,27 @@ export class FaviconGenerator {
       theme_color: this.config.themeColor,
       background_color: this.config.backgroundColor,
       display: 'standalone',
-      orientation: 'portrait',
-      scope: '/',
+      orientation: 'portrait-primary',
       start_url: '/',
+      scope: '/',
       icons: [
         {
-          src: `${this.config.output.prefix || '/'}android-chrome-192x192.png`,
+          src: `${prefix}android-chrome-192x192.png`,
           sizes: '192x192',
-          type: 'image/png'
+          type: 'image/png',
+          purpose: 'any maskable'
         },
         {
-          src: `${this.config.output.prefix || '/'}android-chrome-512x512.png`,
+          src: `${prefix}android-chrome-512x512.png`,
           sizes: '512x512',
-          type: 'image/png'
+          type: 'image/png',
+          purpose: 'any maskable'
         }
       ]
     };
 
-    const manifestPath = path.join(this.config.output.path, 'manifest.json');
-    await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2));
-  }
-
-  /**
-   * Generate browserconfig.xml for Windows
-   */
-  private async generateBrowserConfig(): Promise<void> {
-    const browserConfig = `<?xml version="1.0" encoding="utf-8"?>
-<browserconfig>
-    <msapplication>
-        <tile>
-            <square70x70logo src="${this.config.output.prefix || '/'}mstile-70x70.png"/>
-            <square150x150logo src="${this.config.output.prefix || '/'}mstile-150x150.png"/>
-            <wide310x150logo src="${this.config.output.prefix || '/'}mstile-310x150.png"/>
-            <square310x310logo src="${this.config.output.prefix || '/'}mstile-310x310.png"/>
-            <TileColor>${this.config.themeColor}</TileColor>
-        </tile>
-    </msapplication>
-</browserconfig>`;
-
-    const configPath = path.join(this.config.output.path, 'browserconfig.xml');
-    await fs.writeFile(configPath, browserConfig);
+    const outputPath = path.join(this.config.output.path, 'manifest.json');
+    await fs.writeFile(outputPath, JSON.stringify(manifest, null, 2));
   }
 
   /**

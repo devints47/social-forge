@@ -1,10 +1,28 @@
 # Social Forge 🎨
 
-> Comprehensive image generation for **every** social media platform and messaging app
+> The complete image generation toolkit for modern web development
 
-Social Forge is a zero-dependency TypeScript package that generates optimized images for social media previews, favicons, and SEO metadata across **all major platforms** - from Facebook and Instagram to TikTok, WhatsApp, Discord, and emerging platforms like Threads and Bluesky.
+Social Forge is a zero-dependency TypeScript package that generates optimized images for social media previews, favicons, SEO metadata, and PWA assets across **all major platforms** - from Facebook and Instagram to TikTok, WhatsApp, Discord, and emerging platforms like Threads and Bluesky.
+
+**Perfect for web developers who want everything needed for modern web applications in one command.**
+
+## ✨ Why Social Forge?
+
+- 🌍 **Complete Web Coverage** - Generates everything from favicons to social sharing images
+- 📱 **Modern Standards** - Supports PWA, OpenGraph, Twitter Cards, Apple Touch Icons, and more
+- 🚀 **Zero Dependencies** - Uses Sharp for image processing, no external binaries required  
+- ⚡ **Framework Agnostic** - Works with any framework, includes Next.js helpers
+- 🎯 **Developer-First** - One command generates everything you need for SEO and social sharing
+- 🔧 **TypeScript First** - Full type safety and IntelliSense support
 
 ## 🌟 Features
+
+### Web Development Essentials
+- ✅ **SEO Images** - OpenGraph (og-image.png/jpg), Twitter Cards, generic social sharing
+- ✅ **Favicons** - All formats and sizes (ICO, PNG, SVG, Apple Touch Icons)
+- ✅ **PWA Assets** - App icons, splash screens, manifest.json, browserconfig.xml
+- ✅ **Safari Support** - Pinned tab SVG, Apple-specific optimizations
+- ✅ **Microsoft Support** - Windows tiles, Edge/IE compatibility
 
 ### Major Social Networks
 - ✅ **Facebook** (1200x630) - OpenGraph optimized
@@ -39,25 +57,96 @@ Social Forge is a zero-dependency TypeScript package that generates optimized im
 - ✅ **Bluesky** (1200x630) - Decentralized social network
 - ✅ **Mastodon** (1200x630) - Federated social media
 
-### Technical Assets
-- ✅ **Favicons** - All sizes and formats (ICO, PNG, SVG)
-- ✅ **PWA Icons** - App icons, splash screens, manifest
-- ✅ **Apple Touch Icons** - iOS optimization
-- ✅ **Android Icons** - Material Design compliance
-- ✅ **Windows Tiles** - Microsoft Store support
-
 ## 🚀 Quick Start
 
 ```bash
 npm install social-forge
 ```
 
-### CLI Usage
+### For Web Developers (Most Common Use Case)
 
-Generate assets for all platforms:
+Generate everything you need for a modern web application:
+
 ```bash
-npx social-forge generate logo.png --all
+# Complete web development package (favicon + PWA + SEO images)
+npx social-forge generate logo.png --web
+
+# Or generate specific web assets
+npx social-forge generate logo.png --seo      # OpenGraph & Twitter cards
+npx social-forge generate logo.png --favicon  # All favicon formats  
+npx social-forge generate logo.png --pwa      # PWA icons & manifest
+
+# Generate in both PNG and JPEG formats
+npx social-forge generate logo.png --web --format both
 ```
+
+**Files generated for `--web`:**
+```
+public/images/
+├── og-image.png              # Generic OpenGraph (1200x630)
+├── twitter-image.png         # Twitter card (1200x600)
+├── favicon.ico               # Multi-size ICO
+├── favicon-16x16.png         # Browser favicons
+├── favicon-32x32.png
+├── apple-touch-icon.png      # iOS home screen (180x180)
+├── android-chrome-192x192.png # PWA icons
+├── android-chrome-512x512.png
+├── safari-pinned-tab.svg     # Safari pinned tabs
+├── manifest.json             # PWA manifest
+└── browserconfig.xml         # Microsoft Edge/IE
+```
+
+### HTML Integration
+
+The generated images work seamlessly with your HTML:
+
+```html
+<!-- Favicons -->
+<link rel="icon" href="/images/favicon.ico" sizes="any">
+<link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="manifest" href="/images/manifest.json">
+
+<!-- SEO & Social Sharing -->
+<meta property="og:image" content="/images/og-image.png">
+<meta name="twitter:image" content="/images/twitter-image.png">
+
+<!-- Safari & Microsoft -->
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#000000">
+<meta name="msapplication-config" content="/images/browserconfig.xml">
+```
+
+### Next.js Integration
+
+```typescript
+// app/layout.tsx
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'My App',
+  description: 'My awesome application',
+  icons: {
+    icon: [
+      { url: '/images/favicon.ico', sizes: 'any' },
+      { url: '/images/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/images/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/images/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  openGraph: {
+    images: ['/images/og-image.png'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: ['/images/twitter-image.png'],
+  },
+  manifest: '/images/manifest.json',
+}
+```
+
+### CLI Usage for Social Platforms
 
 Generate assets for specific platforms:
 ```bash
@@ -84,14 +173,13 @@ npx social-forge generate logo.png --threads     # Threads (1080x1080)
 npx social-forge generate logo.png --bluesky     # Bluesky (1200x630)
 npx social-forge generate logo.png --mastodon    # Mastodon (1200x630)
 
-# Technical Assets
-npx social-forge generate logo.png --favicon     # Generate favicons
-npx social-forge generate logo.png --pwa         # Generate PWA icons
-
 # Platform Categories
 npx social-forge generate logo.png --social      # Standard social (FB, Twitter, LinkedIn)
 npx social-forge generate logo.png --messaging   # All messaging platforms
 npx social-forge generate logo.png --platforms   # All video/visual platforms
+
+# Generate everything
+npx social-forge generate logo.png --all
 ```
 
 ### Programmatic Usage

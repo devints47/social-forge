@@ -4,48 +4,47 @@
 
 Social Forge is a zero-dependency TypeScript package that generates optimized images for social media previews, favicons, and SEO metadata across **all major platforms** - from Facebook and Instagram to TikTok, WhatsApp, Discord, and emerging platforms like Threads and Bluesky.
 
-## ✨ Features
-
-- 🌍 **Universal Platform Support** - Covers 25+ platforms including all major social networks and messaging apps
-- 📱 **Mobile-First** - Full support for iOS, Android, WhatsApp, iMessage, and RCS
-- 🚀 **Zero Dependencies** - Uses Sharp for image processing, no external binaries required  
-- ⚡ **Framework Agnostic** - Works with any framework, includes Next.js helpers
-- 🎯 **Smart Templates** - Automatic text overlay, gradients, and social-optimized layouts
-- 🔧 **TypeScript First** - Full type safety and IntelliSense support
-
-## 🌐 Platform Coverage
+## 🌟 Features
 
 ### Major Social Networks
 - ✅ **Facebook** (1200x630) - OpenGraph optimized
-- ✅ **Twitter/X** (1200x600) - Twitter Cards support  
+- ✅ **Twitter/X** (1200x600) - Twitter Cards support
 - ✅ **LinkedIn** (1200x627) - Professional networking
-- ✅ **Instagram** (Multiple formats) - Square, Portrait, Landscape, Stories, Reels
+- ✅ **Instagram** - Multiple formats:
+  - Square (1080x1080) - Standard posts
+  - Portrait (1080x1350) - Vertical posts
+  - Stories (1080x1920) - 24hr stories
+  - Reels (1080x1920) - Video content
 - ✅ **TikTok** (1080x1920) - Vertical video format
-- ✅ **YouTube** (1280x720 + Shorts) - Thumbnails and vertical content
-- ✅ **Pinterest** (1000x1500 + Square) - Pin and board optimized
-- ✅ **Snapchat** (1080x1920) - Stories format
+- ✅ **YouTube**:
+  - Thumbnails (1280x720) - Video previews
+  - Shorts (1080x1920) - Short content
+- ✅ **Pinterest**:
+  - Pin (1000x1500) - Pin boards
+  - Square (1000x1000) - Square pins
 
-### Messaging Applications  
-- ✅ **WhatsApp** (400x400 + Link preview) - Profile and sharing
-- ✅ **iMessage** (1200x630) - Apple ecosystem integration
-- ✅ **Discord** (1200x630) - Gaming community standard
-- ✅ **Telegram** (1200x630) - Secure messaging
-- ✅ **Signal** (1200x630) - Privacy-focused
-- ✅ **Slack** (1200x630) - Workplace communication  
-- ✅ **Android RCS** (1200x630) - Rich Communication Services
-- ✅ **WeChat** (500x400) - China's super app
-- ✅ **Line** (1200x630) - Popular in Asia
+### Messaging Applications
+- ✅ **WhatsApp**:
+  - Profile (400x400) - Profile images
+  - Link Preview (1200x630) - Link sharing
+- ✅ **Discord** (1200x630) - Server sharing
+- ✅ **Telegram** (1200x630) - Message sharing
+- ✅ **Signal** (1200x630) - Secure sharing
+- ✅ **Slack** (1200x630) - Workspace sharing
+- ✅ **iMessage** (1200x630) - iOS sharing
+- ✅ **Android RCS** (1200x630) - Android sharing
 
 ### Emerging Platforms
 - ✅ **Threads** (1080x1080) - Meta's Twitter alternative
 - ✅ **Bluesky** (1200x630) - Decentralized social network
 - ✅ **Mastodon** (1200x630) - Federated social media
 
-### Mobile Integration
-- ✅ **Apple/iOS** sharing - Native integration with Share Sheet
-- ✅ **Android** sharing - Native Android sharing 
-- ✅ **SMS/MMS** support - Basic messaging compatibility
-- ✅ **Safari/Chrome** mobile - Browser sharing optimization
+### Technical Assets
+- ✅ **Favicons** - All sizes and formats (ICO, PNG, SVG)
+- ✅ **PWA Icons** - App icons, splash screens, manifest
+- ✅ **Apple Touch Icons** - iOS optimization
+- ✅ **Android Icons** - Material Design compliance
+- ✅ **Windows Tiles** - Microsoft Store support
 
 ## 🚀 Quick Start
 
@@ -53,7 +52,49 @@ Social Forge is a zero-dependency TypeScript package that generates optimized im
 npm install social-forge
 ```
 
-### Basic Usage
+### CLI Usage
+
+Generate assets for all platforms:
+```bash
+npx social-forge generate logo.png --all
+```
+
+Generate assets for specific platforms:
+```bash
+# Major Social Networks
+npx social-forge generate logo.png --facebook    # Facebook (1200x630)
+npx social-forge generate logo.png --twitter     # Twitter/X (1200x600)
+npx social-forge generate logo.png --linkedin    # LinkedIn (1200x627)
+npx social-forge generate logo.png --instagram   # Instagram (all formats)
+npx social-forge generate logo.png --tiktok      # TikTok (1080x1920)
+npx social-forge generate logo.png --youtube     # YouTube (thumbnail + shorts)
+npx social-forge generate logo.png --pinterest   # Pinterest (pin + square)
+
+# Messaging Apps
+npx social-forge generate logo.png --whatsapp    # WhatsApp (profile + preview)
+npx social-forge generate logo.png --discord     # Discord (1200x630)
+npx social-forge generate logo.png --telegram    # Telegram (1200x630)
+npx social-forge generate logo.png --signal      # Signal (1200x630)
+npx social-forge generate logo.png --slack       # Slack (1200x630)
+npx social-forge generate logo.png --imessage    # iMessage (1200x630)
+npx social-forge generate logo.png --androidrcs  # Android RCS (1200x630)
+
+# Emerging Platforms
+npx social-forge generate logo.png --threads     # Threads (1080x1080)
+npx social-forge generate logo.png --bluesky     # Bluesky (1200x630)
+npx social-forge generate logo.png --mastodon    # Mastodon (1200x630)
+
+# Technical Assets
+npx social-forge generate logo.png --favicon     # Generate favicons
+npx social-forge generate logo.png --pwa         # Generate PWA icons
+
+# Platform Categories
+npx social-forge generate logo.png --social      # Standard social (FB, Twitter, LinkedIn)
+npx social-forge generate logo.png --messaging   # All messaging platforms
+npx social-forge generate logo.png --platforms   # All video/visual platforms
+```
+
+### Programmatic Usage
 
 ```typescript
 import { ComprehensiveSocialGenerator } from 'social-forge';
@@ -74,62 +115,81 @@ await generator.generate({
   includeStandard: true,    // Facebook, Twitter, LinkedIn  
   includeInstagram: true,   // All Instagram formats
   includeMessaging: true,   // WhatsApp, Discord, Telegram, etc.
-  includePlatforms: true    // TikTok, YouTube, Pinterest, etc.
+  includePlatforms: true,   // TikTok, YouTube, Pinterest, etc.
+  platforms: {
+    // Standard social
+    facebook: true,
+    twitter: true,
+    linkedin: true,
+    
+    // Instagram variations
+    instagramStories: true,
+    instagramReels: true,
+    
+    // Messaging apps
+    whatsapp: true,
+    discord: true,
+    telegram: true,
+    signal: true,
+    slack: true,
+    imessage: true,
+    androidRCS: true,
+    
+    // Video/Visual platforms
+    tiktok: true,
+    youtube: true,
+    pinterest: true,
+    
+    // Emerging platforms
+    threads: true,
+    bluesky: true,
+    mastodon: true
+  }
 });
+
+// Get meta tags for your HTML
+const metaTags = generator.getMetaTags();
+
+// Get Next.js metadata configuration
+const nextMetadata = generator.getNextMetadata();
 ```
 
-### Platform-Specific Generation
+### Individual Platform Generators
 
 ```typescript
 // Individual Platform Generators
-import { FacebookGenerator, TwitterGenerator, LinkedInGenerator, TikTokGenerator, WhatsAppGenerator } from 'social-forge';
+import { 
+  FacebookGenerator, 
+  TwitterGenerator, 
+  LinkedInGenerator, 
+  InstagramGenerator,
+  TikTokGenerator, 
+  WhatsAppGenerator 
+} from 'social-forge';
 
 // Facebook only
 const facebook = new FacebookGenerator('./logo.png', config);
-await facebook.generate({ includeSquare: true });
+await facebook.generate();
 
 // Twitter only
 const twitter = new TwitterGenerator('./logo.png', config);
-await twitter.generate({ cardType: 'summary_large_image' });
+await twitter.generate();
 
 // LinkedIn only
 const linkedin = new LinkedInGenerator('./logo.png', config);
-await linkedin.generate({ includeCompany: true });
+await linkedin.generate();
+
+// Instagram only
+const instagram = new InstagramGenerator('./logo.png', config);
+await instagram.generate({ includeStories: true, includeReels: true });
 
 // TikTok only
 const tiktok = new TikTokGenerator('./logo.png', config);
-await tiktok.generate({ includeProfile: true });
+await tiktok.generate();
 
 // WhatsApp only
 const whatsapp = new WhatsAppGenerator('./logo.png', config);
 await whatsapp.generate();
-
-// Category Generators
-import { InstagramGenerator, MessagingGenerator } from 'social-forge';
-
-// Instagram (all formats)
-const instagram = new InstagramGenerator('./logo.png', config);
-await instagram.generate({
-  includeStories: true,
-  includeReels: true
-});
-
-// Messaging apps
-const messaging = new MessagingGenerator('./logo.png', config);
-await messaging.generate({
-  includeWhatsApp: true,
-  includeDiscord: true,
-  includeiMessage: true
-});
-
-// Favicon & PWA
-import { FaviconGenerator, PWAGenerator } from 'social-forge';
-
-const favicon = new FaviconGenerator('./logo.png', config);
-await favicon.generate();
-
-const pwa = new PWAGenerator('./logo.png', config);
-await pwa.generate({ includeSplashScreens: true });
 ```
 
 ### Framework Integration

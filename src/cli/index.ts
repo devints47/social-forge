@@ -36,6 +36,10 @@ interface CLIOptions {
   telegram?: boolean;
   signal?: boolean;
   slack?: boolean;
+  androidrcs?: boolean;
+  threads?: boolean;
+  bluesky?: boolean;
+  mastodon?: boolean;
   messaging?: boolean;
   platforms?: boolean;
   favicon?: boolean;
@@ -451,6 +455,10 @@ program
   .option('--telegram', 'Generate Telegram assets only')
   .option('--signal', 'Generate Signal assets only')
   .option('--slack', 'Generate Slack assets only')
+  .option('--androidrcs', 'Generate Android RCS assets only')
+  .option('--threads', 'Generate Threads assets only')
+  .option('--bluesky', 'Generate Bluesky assets only')
+  .option('--mastodon', 'Generate Mastodon assets only')
   .option('--messaging', 'Generate messaging app assets')
   .option('--platforms', 'Generate video/visual platform assets')
   .option('--favicon', 'Generate favicon assets only')
@@ -484,7 +492,8 @@ program
       } else if (options.facebook || options.twitter || options.linkedin || options.instagram || 
                  options.tiktok || options.whatsapp || options.youtube || options.pinterest ||
                  options.imessage || options.discord || options.telegram || options.signal ||
-                 options.slack || options.social || options.messaging || 
+                 options.slack || options.androidrcs || options.threads || options.bluesky ||
+                 options.mastodon || options.social || options.messaging || 
                  options.platforms || options.favicon || options.pwa) {
         await generateSpecific(sourcePath, config, options);
       } else {

@@ -29,6 +29,13 @@ interface CLIOptions {
   instagram?: boolean;
   tiktok?: boolean;
   whatsapp?: boolean;
+  youtube?: boolean;
+  pinterest?: boolean;
+  imessage?: boolean;
+  discord?: boolean;
+  telegram?: boolean;
+  signal?: boolean;
+  slack?: boolean;
   messaging?: boolean;
   platforms?: boolean;
   favicon?: boolean;
@@ -167,6 +174,134 @@ async function generateSpecific(sourceImage: string, config: SocialForgeConfig, 
     generators.push({ name: 'WhatsApp', generator, files: generator.getGeneratedFiles() });
   }
 
+  if (options.youtube) {
+    const generator = new ComprehensiveSocialGenerator(sourceImage, config);
+    await generator.generate({
+      includeStandard: false,
+      includeInstagram: false,
+      includeMessaging: false,
+      includePlatforms: true,
+      platforms: {
+        youtube: true,
+        tiktok: false,
+        pinterest: false
+      }
+    });
+    generators.push({ name: 'YouTube', generator, files: ['youtube-thumbnail.png', 'youtube-shorts.png'] });
+  }
+
+  if (options.pinterest) {
+    const generator = new ComprehensiveSocialGenerator(sourceImage, config);
+    await generator.generate({
+      includeStandard: false,
+      includeInstagram: false,
+      includeMessaging: false,
+      includePlatforms: true,
+      platforms: {
+        youtube: false,
+        tiktok: false,
+        pinterest: true
+      }
+    });
+    generators.push({ name: 'Pinterest', generator, files: ['pinterest-pin.png', 'pinterest-board.png'] });
+  }
+
+  // Messaging platforms
+  if (options.imessage) {
+    const generator = new ComprehensiveSocialGenerator(sourceImage, config);
+    await generator.generate({
+      includeStandard: false,
+      includeInstagram: false,
+      includeMessaging: true,
+      includePlatforms: false,
+      platforms: {
+        imessage: true,
+        whatsapp: false,
+        discord: false,
+        telegram: false,
+        signal: false,
+        slack: false
+      }
+    });
+    generators.push({ name: 'iMessage', generator, files: ['imessage.png'] });
+  }
+
+  if (options.discord) {
+    const generator = new ComprehensiveSocialGenerator(sourceImage, config);
+    await generator.generate({
+      includeStandard: false,
+      includeInstagram: false,
+      includeMessaging: true,
+      includePlatforms: false,
+      platforms: {
+        imessage: false,
+        whatsapp: false,
+        discord: true,
+        telegram: false,
+        signal: false,
+        slack: false
+      }
+    });
+    generators.push({ name: 'Discord', generator, files: ['discord.png'] });
+  }
+
+  if (options.telegram) {
+    const generator = new ComprehensiveSocialGenerator(sourceImage, config);
+    await generator.generate({
+      includeStandard: false,
+      includeInstagram: false,
+      includeMessaging: true,
+      includePlatforms: false,
+      platforms: {
+        imessage: false,
+        whatsapp: false,
+        discord: false,
+        telegram: true,
+        signal: false,
+        slack: false
+      }
+    });
+    generators.push({ name: 'Telegram', generator, files: ['telegram.png'] });
+  }
+
+  if (options.signal) {
+    const generator = new ComprehensiveSocialGenerator(sourceImage, config);
+    await generator.generate({
+      includeStandard: false,
+      includeInstagram: false,
+      includeMessaging: true,
+      includePlatforms: false,
+      platforms: {
+        imessage: false,
+        whatsapp: false,
+        discord: false,
+        telegram: false,
+        signal: true,
+        slack: false
+      }
+    });
+    generators.push({ name: 'Signal', generator, files: ['signal.png'] });
+  }
+
+  if (options.slack) {
+    const generator = new ComprehensiveSocialGenerator(sourceImage, config);
+    await generator.generate({
+      includeStandard: false,
+      includeInstagram: false,
+      includeMessaging: true,
+      includePlatforms: false,
+      platforms: {
+        imessage: false,
+        whatsapp: false,
+        discord: false,
+        telegram: false,
+        signal: false,
+        slack: true
+      }
+    });
+    generators.push({ name: 'Slack', generator, files: ['slack.png'] });
+  }
+
   // Category generators
   if (options.social) {
     const generator = new ComprehensiveSocialGenerator(sourceImage, config);
@@ -177,13 +312,13 @@ async function generateSpecific(sourceImage: string, config: SocialForgeConfig, 
   if (options.messaging) {
     const generator = new ComprehensiveSocialGenerator(sourceImage, config);
     await generator.generate({ includeStandard: false, includeInstagram: false, includeMessaging: true, includePlatforms: false });
-    generators.push({ name: 'Messaging Apps', generator, files: ['whatsapp-profile.png', 'discord.png', 'telegram.png'] });
+    generators.push({ name: 'Messaging Apps', generator, files: ['whatsapp-profile.png', 'discord.png', 'telegram.png', 'signal.png', 'slack.png', 'imessage.png'] });
   }
 
   if (options.platforms) {
     const generator = new ComprehensiveSocialGenerator(sourceImage, config);
     await generator.generate({ includeStandard: false, includeInstagram: false, includeMessaging: false, includePlatforms: true });
-    generators.push({ name: 'Video Platforms', generator, files: ['tiktok.png', 'youtube-thumbnail.png', 'pinterest-pin.png'] });
+    generators.push({ name: 'Video Platforms', generator, files: ['tiktok.png', 'youtube-thumbnail.png', 'youtube-shorts.png', 'pinterest-pin.png', 'pinterest-board.png'] });
   }
 
   if (options.favicon) {
@@ -309,6 +444,13 @@ program
   .option('--instagram', 'Generate Instagram assets only')
   .option('--tiktok', 'Generate TikTok assets only')
   .option('--whatsapp', 'Generate WhatsApp assets only')
+  .option('--youtube', 'Generate YouTube assets only')
+  .option('--pinterest', 'Generate Pinterest assets only')
+  .option('--imessage', 'Generate iMessage assets only')
+  .option('--discord', 'Generate Discord assets only')
+  .option('--telegram', 'Generate Telegram assets only')
+  .option('--signal', 'Generate Signal assets only')
+  .option('--slack', 'Generate Slack assets only')
   .option('--messaging', 'Generate messaging app assets')
   .option('--platforms', 'Generate video/visual platform assets')
   .option('--favicon', 'Generate favicon assets only')
@@ -340,7 +482,9 @@ program
       if (options.all) {
         await generateAll(sourcePath, config, options);
       } else if (options.facebook || options.twitter || options.linkedin || options.instagram || 
-                 options.tiktok || options.whatsapp || options.social || options.messaging || 
+                 options.tiktok || options.whatsapp || options.youtube || options.pinterest ||
+                 options.imessage || options.discord || options.telegram || options.signal ||
+                 options.slack || options.social || options.messaging || 
                  options.platforms || options.favicon || options.pwa) {
         await generateSpecific(sourcePath, config, options);
       } else {

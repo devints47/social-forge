@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "social-forge": "./bin/cli.js"
+    "social-forge": "dist/cli/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -53,7 +53,7 @@
   "dependencies": {
     "@types/sharp": "^0.31.1",
     "chalk": "^5.0.0",
-    "commander": "^11.0.0",
+    "commander": "^11.1.0",
     "conf": "^11.0.0",
     "ora": "^7.0.0",
     "sharp": "^0.33.5"

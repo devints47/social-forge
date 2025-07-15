@@ -9,12 +9,23 @@ export { MessagingGenerator, type MessagingOptions } from './generators/social/m
 export { PlatformGenerator, type PlatformOptions } from './generators/social/platforms';
 export { ComprehensiveSocialGenerator, type ComprehensiveOptions } from './generators/social/comprehensive';
 
+// Individual Platform Generators
+export { FacebookGenerator, type FacebookOptions } from './generators/social/facebook';
+export { TwitterGenerator, type TwitterOptions } from './generators/social/twitter';
+export { LinkedInGenerator, type LinkedInOptions } from './generators/social/linkedin';
+export { TikTokGenerator, type TikTokOptions } from './generators/social/tiktok';
+export { WhatsAppGenerator, type WhatsAppOptions } from './generators/social/whatsapp';
+
+// Favicon and PWA Generators
+export { FaviconGenerator, type FaviconOptions } from './generators/favicon/favicon';
+export { PWAGenerator, type PWAOptions } from './generators/pwa/pwa';
+
 // Framework helpers (will be implemented)
 // export { generateNextMetadata } from './frameworks/nextjs';
 // export { generateReactComponents } from './frameworks/react';
 
-// CLI (will be implemented)
-// export { cli } from './cli';
+// CLI
+export { program as cli } from './cli/index';
 
 /**
  * Default export for convenience

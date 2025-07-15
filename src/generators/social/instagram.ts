@@ -171,22 +171,24 @@ export class InstagramGenerator {
   }
 
   /**
-   * Get Next.js metadata configuration
+   * Get Next.js metadata configuration for Instagram
    */
   getNextMetadata() {
-    const { prefix = '/' } = this.config.output;
+    const prefix = this.config.output.prefix || '/';
     return {
       openGraph: {
         images: [
           {
             url: `${prefix}instagram-square.png`,
             width: ImageSizes.social.instagramSquare.width,
-            height: ImageSizes.social.instagramSquare.height
+            height: ImageSizes.social.instagramSquare.height,
+            alt: this.config.appName,
           },
           {
-            url: `${prefix}instagram-portrait.png`,
-            width: ImageSizes.social.instagramPortrait.width,
-            height: ImageSizes.social.instagramPortrait.height
+            url: `${prefix}instagram-landscape.png`,
+            width: ImageSizes.social.instagramLandscape.width,
+            height: ImageSizes.social.instagramLandscape.height,
+            alt: this.config.appName,
           }
         ]
       },
@@ -195,5 +197,18 @@ export class InstagramGenerator {
         images: [`${prefix}instagram-landscape.png`]
       }
     };
+  }
+
+  /**
+   * Get list of generated files
+   */
+  getGeneratedFiles(): string[] {
+    return [
+      'instagram-square.png',
+      'instagram-portrait.png',
+      'instagram-landscape.png',
+      'instagram-stories.png',
+      'instagram-reels.png'
+    ];
   }
 } 

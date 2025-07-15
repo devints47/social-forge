@@ -81,24 +81,55 @@ await generator.generate({
 ### Platform-Specific Generation
 
 ```typescript
-// Instagram only
-import { InstagramGenerator } from 'social-forge/instagram';
+// Individual Platform Generators
+import { FacebookGenerator, TwitterGenerator, LinkedInGenerator, TikTokGenerator, WhatsAppGenerator } from 'social-forge';
 
+// Facebook only
+const facebook = new FacebookGenerator('./logo.png', config);
+await facebook.generate({ includeSquare: true });
+
+// Twitter only
+const twitter = new TwitterGenerator('./logo.png', config);
+await twitter.generate({ cardType: 'summary_large_image' });
+
+// LinkedIn only
+const linkedin = new LinkedInGenerator('./logo.png', config);
+await linkedin.generate({ includeCompany: true });
+
+// TikTok only
+const tiktok = new TikTokGenerator('./logo.png', config);
+await tiktok.generate({ includeProfile: true });
+
+// WhatsApp only
+const whatsapp = new WhatsAppGenerator('./logo.png', config);
+await whatsapp.generate();
+
+// Category Generators
+import { InstagramGenerator, MessagingGenerator } from 'social-forge';
+
+// Instagram (all formats)
 const instagram = new InstagramGenerator('./logo.png', config);
 await instagram.generate({
   includeStories: true,
   includeReels: true
 });
 
-// Messaging apps only  
-import { MessagingGenerator } from 'social-forge/messaging';
-
+// Messaging apps
 const messaging = new MessagingGenerator('./logo.png', config);
 await messaging.generate({
   includeWhatsApp: true,
   includeDiscord: true,
   includeiMessage: true
 });
+
+// Favicon & PWA
+import { FaviconGenerator, PWAGenerator } from 'social-forge';
+
+const favicon = new FaviconGenerator('./logo.png', config);
+await favicon.generate();
+
+const pwa = new PWAGenerator('./logo.png', config);
+await pwa.generate({ includeSplashScreens: true });
 ```
 
 ### Framework Integration
@@ -223,14 +254,30 @@ Check out the `/examples` directory for complete demos:
 ## 🔧 CLI Usage
 
 ```bash
+# Initialize new project
+npx social-forge init my-project
+
 # Generate for all platforms
 npx social-forge generate ./logo.png --all
 
-# Specific platforms only
-npx social-forge generate ./logo.png --instagram --messaging
+# Individual platforms
+npx social-forge generate ./logo.png --facebook --twitter --linkedin
+npx social-forge generate ./logo.png --tiktok --whatsapp --instagram
+
+# Platform categories
+npx social-forge generate ./logo.png --social --messaging --platforms
+
+# Technical assets
+npx social-forge generate ./logo.png --favicon --pwa
 
 # Custom configuration
-npx social-forge generate ./logo.png --config ./social-forge.config.js
+npx social-forge generate ./logo.png --config ./social-forge.config.json
+
+# Generate HTML meta tags
+npx social-forge meta ./logo.png
+
+# Show platform coverage
+npx social-forge info
 ```
 
 ## 📚 API Reference

@@ -1,5 +1,5 @@
 // Core configuration and validation
-export { ConfigValidator, type SocialForgeConfig } from './core/config-validator';
+export { ConfigValidator, type PixelForgeConfig } from './core/config-validator';
 export { ImageProcessor, ImageSizes } from './core/image-processor';
 
 // Comprehensive generators

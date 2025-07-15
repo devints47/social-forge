@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 
-export interface SocialForgeConfig {
+export interface PixelForgeConfig {
   // Basic Info
   appName: string;
   description?: string;
@@ -37,10 +37,10 @@ export interface SocialForgeConfig {
 }
 
 export class ConfigValidator {
-  private config: SocialForgeConfig;
+  private config: PixelForgeConfig;
   private errors: string[] = [];
 
-  constructor(config: SocialForgeConfig) {
+  constructor(config: PixelForgeConfig) {
     this.config = config;
   }
 
@@ -158,7 +158,7 @@ export class ConfigValidator {
   /**
    * Get default configuration
    */
-  static getDefaultConfig(): Partial<SocialForgeConfig> {
+  static getDefaultConfig(): Partial<PixelForgeConfig> {
     return {
       platforms: {
         social: true,

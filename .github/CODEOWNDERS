@@ -1,0 +1,30 @@
+# CODEOWNERS for pixel-forge
+# This file defines who needs to review changes to specific files/directories
+
+# Global ownership - all files require review from both maintainers
+* @devints47 @kendalld
+
+# Package configuration - critical files require both maintainers
+package.json @devints47 @kendalld
+package-lock.json @devints47 @kendalld
+tsconfig.json @devints47 @kendalld
+.github/ @devints47 @kendalld
+
+# Core source code
+src/ @devints47 @kendalld
+types/ @devints47 @kendalld
+
+# Documentation
+README.md @devints47 @kendalld
+docs/ @devints47 @kendalld
+CHANGELOG.md @devints47 @kendalld
+
+# Build and deployment
+.github/workflows/ @devints47 @kendalld
+scripts/ @devints47 @kendalld
+
+# Configuration files
+*.config.js @devints47 @kendalld
+*.config.ts @devints47 @kendalld
+.eslintrc* @devints47 @kendalld
+.prettierrc* @devints47 @kendalld

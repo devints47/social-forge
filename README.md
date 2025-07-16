@@ -2,7 +2,9 @@
 
 > The complete image generation toolkit for modern web development
 
-Pixel Forge is a zero-dependency TypeScript package that generates optimized images for social media previews, favicons, SEO metadata, and PWA assets across **all major platforms** - from Facebook and Instagram to TikTok, WhatsApp, Discord, and emerging platforms like Threads and Bluesky.
+Pixel Forge is a zero-dependency TypeScript package that generates optimized images for social media previews, favicons, SEO metadata, and PWA assets across **all major platforms** - from Facebook and Instagram to TikTok, WhatsApp, Discord, to iMessage, SMS, RCS, and more.
+
+*Stop wrestling with image sizes. Start focusing on your content.* 
 
 **Perfect for web developers who want everything needed for modern web applications in one command.**
 
@@ -514,7 +516,7 @@ npx pixel-forge info
 We welcome contributions! Social media platforms change frequently, and we need help keeping everything up to date.
 
 ### Priority Areas
-- 🆕 New platform support (Threads, Bluesky updates)
+- 🆕 New platform support
 - 📱 Mobile platform optimization
 - 🎨 Additional templates and themes
 - 🧪 More comprehensive testing
@@ -529,6 +531,6 @@ Built with [Sharp](https://sharp.pixelplumbing.com/) for fast, high-quality imag
 
 ---
 
-**Made with ❤️ for the social media ecosystem**
+**Made with ❤️ for the hassle of managing preview images for websitesm**
 
 *Stop wrestling with image sizes. Start focusing on your content.* 

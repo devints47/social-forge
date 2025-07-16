@@ -83,8 +83,7 @@ jobs:
     
     - name: Push changes
       run: |
-        git push origin main
-        git push origin v${{ steps.package-version.outputs.version }}
+        git push origin main --follow-tags
     
     # Publish to npm registry
     - name: Publish to npm
@@ -128,12 +127,12 @@ jobs:
       run: mv package.json.backup package.json
     
     - name: Create GitHub Release
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: v${{ steps.package-version.outputs.version }}
-        release_name: Release v${{ steps.package-version.outputs.version }}
+        name: Release v${{ steps.package-version.outputs.version }}
         body: |
           ## Changes in v${{ steps.package-version.outputs.version }}
           

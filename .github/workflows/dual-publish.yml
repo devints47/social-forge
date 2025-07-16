@@ -74,16 +74,11 @@ jobs:
     - name: Get package version
       id: package-version
       run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-    
-    - name: Commit version bump
+
+    - name: Create git tag
       run: |
-        git add package.json
-        git commit -m "chore: bump version to v${{ steps.package-version.outputs.version }}"
         git tag v${{ steps.package-version.outputs.version }}
-    
-    - name: Push changes
-      run: |
-        git push origin main --follow-tags
+        git push origin v${{ steps.package-version.outputs.version }}
     
     # Publish to npm registry
     - name: Publish to npm
@@ -136,7 +131,7 @@ jobs:
         body: |
           ## Changes in v${{ steps.package-version.outputs.version }}
           
-          - Automated dual release via GitHub Actions
+          - Manual dual release via GitHub Actions
           - Version bump: ${{ github.event.inputs.version }}
           
           ### Installation from npm
@@ -158,6 +153,36 @@ jobs:
           - `pforge` - Short alias
         draft: false
         prerelease: ${{ github.event.inputs.version == 'prerelease' }}
+
+    # Create PR to update package.json version in repo
+    - name: Create version update branch
+      run: |
+        git checkout -b chore/update-version-v${{ steps.package-version.outputs.version }}
+        git add package.json
+        git commit -m "chore: update package.json to v${{ steps.package-version.outputs.version }}"
+        git push origin chore/update-version-v${{ steps.package-version.outputs.version }}
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: chore/update-version-v${{ steps.package-version.outputs.version }}
+        title: "chore: update package.json to v${{ steps.package-version.outputs.version }}"
+        body: |
+          ## 📦 Version Update
+          
+          This PR updates `package.json` to match the published version.
+          
+          - **Published version**: v${{ steps.package-version.outputs.version }}
+          - **npm**: ${{ github.event.inputs.publish_to_npm == 'true' && '✅ Published' || '❌ Skipped' }}
+          - **GitHub Packages**: ${{ github.event.inputs.publish_to_github == 'true' && '✅ Published' || '❌ Skipped' }}
+          
+          ### Changes
+          - Updated `package.json` version to `${{ steps.package-version.outputs.version }}`
+          
+          This is an automated PR created after successful package publishing.
+        commit-message: "chore: update package.json to v${{ steps.package-version.outputs.version }}"
+        delete-branch: true
     
     - name: Summary
       run: |
@@ -165,6 +190,7 @@ jobs:
         echo "- **Version**: v${{ steps.package-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
         echo "- **npm**: ${{ github.event.inputs.publish_to_npm == 'true' && '✅ Published' || '❌ Skipped' }}" >> $GITHUB_STEP_SUMMARY
         echo "- **GitHub Packages**: ${{ github.event.inputs.publish_to_github == 'true' && '✅ Published' || '❌ Skipped' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version PR**: Created automatically" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### Usage:" >> $GITHUB_STEP_SUMMARY
         echo "- npm: \`npx pixel-forge generate logo.png --web\`" >> $GITHUB_STEP_SUMMARY

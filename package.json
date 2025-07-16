@@ -1,6 +1,6 @@
 {
   "name": "pixel-forge",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A comprehensive generator for social media previews, favicons, and visual assets across all platforms",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -48,6 +48,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/devints47/pixel-forge.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
   },
   "bugs": {
     "url": "https://github.com/devints47/pixel-forge/issues"

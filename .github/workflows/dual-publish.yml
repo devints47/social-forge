@@ -1,4 +1,4 @@
-name: Publish Package
+name: Dual Publish (npm + GitHub Packages)
 
 on:
   workflow_dispatch:
@@ -17,9 +17,19 @@ on:
         description: 'Prerelease tag (for prerelease only)'
         required: false
         default: 'beta'
+      publish_to_npm:
+        description: 'Publish to npm registry'
+        required: true
+        default: true
+        type: boolean
+      publish_to_github:
+        description: 'Publish to GitHub Packages'
+        required: true
+        default: true
+        type: boolean
 
 jobs:
-  publish:
+  dual-publish:
     runs-on: ubuntu-latest
     
     steps:
@@ -29,7 +39,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         fetch-depth: 0
     
-    - name: Setup Node.js
+    - name: Setup Node.js for npm
       uses: actions/setup-node@v4
       with:
         node-version: '20'
@@ -76,12 +86,16 @@ jobs:
         git push origin main
         git push origin v${{ steps.package-version.outputs.version }}
     
+    # Publish to npm registry
     - name: Publish to npm
+      if: github.event.inputs.publish_to_npm == 'true'
       run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     
+    # Publish to GitHub Packages
     - name: Setup Node.js for GitHub Packages
+      if: github.event.inputs.publish_to_github == 'true'
       uses: actions/setup-node@v4
       with:
         node-version: '20'
@@ -89,17 +103,28 @@ jobs:
         cache: 'npm'
     
     - name: Configure package for GitHub Packages
+      if: github.event.inputs.publish_to_github == 'true'
       run: |
         cp package.json package.json.backup
+        # Change name to scoped for GitHub Packages
         jq '.name = "@devints47/pixel-forge"' package.json > package.json.tmp
+        mv package.json.tmp package.json
+        
+        # Update binary paths to work with scoped name
+        jq '.bin = {
+          "pixel-forge": "dist/cli/index.js",
+          "pforge": "dist/cli/index.js"
+        }' package.json > package.json.tmp
         mv package.json.tmp package.json
     
     - name: Publish to GitHub Packages
+      if: github.event.inputs.publish_to_github == 'true'
       run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Restore original package.json
+      if: github.event.inputs.publish_to_github == 'true'
       run: mv package.json.backup package.json
     
     - name: Create GitHub Release
@@ -112,16 +137,36 @@ jobs:
         body: |
           ## Changes in v${{ steps.package-version.outputs.version }}
           
-          - Automated release via GitHub Actions
+          - Automated dual release via GitHub Actions
           - Version bump: ${{ github.event.inputs.version }}
           
-          ### Installation
+          ### Installation from npm
           ```bash
           npm install -g pixel-forge@${{ steps.package-version.outputs.version }}
+          # or run directly
+          npx pixel-forge generate logo.png --web
           ```
           
-          ### CLI Commands
+          ### Installation from GitHub Packages
+          ```bash
+          npm install -g @devints47/pixel-forge@${{ steps.package-version.outputs.version }}
+          # or run directly  
+          npx @devints47/pixel-forge generate logo.png --web
+          ```
+          
+          ### CLI Commands (both registries)
           - `pixel-forge` - Main command
           - `pforge` - Short alias
         draft: false
-        prerelease: ${{ github.event.inputs.version == 'prerelease' }} 
+        prerelease: ${{ github.event.inputs.version == 'prerelease' }}
+    
+    - name: Summary
+      run: |
+        echo "## Publication Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version**: v${{ steps.package-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **npm**: ${{ github.event.inputs.publish_to_npm == 'true' && '✅ Published' || '❌ Skipped' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **GitHub Packages**: ${{ github.event.inputs.publish_to_github == 'true' && '✅ Published' || '❌ Skipped' }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Usage:" >> $GITHUB_STEP_SUMMARY
+        echo "- npm: \`npx pixel-forge generate logo.png --web\`" >> $GITHUB_STEP_SUMMARY
+        echo "- GitHub: \`npx @devints47/pixel-forge generate logo.png --web\`" >> $GITHUB_STEP_SUMMARY 

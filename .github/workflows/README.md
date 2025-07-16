@@ -13,7 +13,8 @@ This directory contains automated workflows for the Pixel Forge project.
 
 **Jobs:**
 - **Test**: Runs tests, linting, and builds across Node.js versions 18, 20, and 22
-- **Publish**: Automatically publishes to npm when a GitHub release is published
+- **Publish npm**: Automatically publishes to npm when a GitHub release is published
+- **Publish GitHub**: Automatically publishes to GitHub Packages when a GitHub release is published
 - **Security**: Runs security audits on main branch pushes
 
 ### 2. Manual Publish (`publish.yml`)
@@ -24,8 +25,20 @@ This directory contains automated workflows for the Pixel Forge project.
 - Choose version bump type: patch, minor, major, or prerelease
 - Automatically bumps version in package.json
 - Creates git tag and GitHub release
-- Publishes to npm
+- Publishes to both npm and GitHub Packages
 - Supports prerelease versions with custom tags
+
+### 3. Dual Publish (`dual-publish.yml`) - **NEW**
+
+**Trigger:** Manual workflow dispatch
+
+**Features:**
+- Choose version bump type and prerelease tags
+- **Selective publishing**: Choose which registries to publish to
+- Publishes to npm as `pixel-forge`
+- Publishes to GitHub Packages as `@devints47/pixel-forge`
+- **Keeps your CLI aliases**: Both `pixel-forge` and `pforge` work from either registry
+- Comprehensive release notes with installation instructions for both registries
 
 ## Setup Instructions
 
@@ -57,12 +70,23 @@ Ensure the repository has the following permissions:
 4. Create a new tag (e.g., `v1.0.1`)
 5. Fill in release details
 6. Click **Publish release**
-7. The workflow will automatically publish to npm
+7. The workflow will automatically publish to **both npm and GitHub Packages**
 
-### Manual Publishing
+### Manual Publishing Options
 
+#### Option 1: Dual Publish (NEW - Recommended)
 1. Go to **Actions** tab in your repository
-2. Select **Publish Package** workflow
+2. Select **"Dual Publish (npm + GitHub Packages)"** workflow
+3. Click **Run workflow**
+4. Configure options:
+   - **Version bump type**: patch/minor/major/prerelease
+   - **Publish to npm**: ✅ (recommended: keep enabled)
+   - **Publish to GitHub Packages**: ✅ (recommended: keep enabled)
+5. Click **Run workflow**
+
+#### Option 2: Legacy Publish 
+1. Go to **Actions** tab in your repository
+2. Select **"Publish Package"** workflow
 3. Click **Run workflow**
 4. Choose version bump type:
    - `patch`: 1.0.0 → 1.0.1 (bug fixes)
@@ -70,6 +94,35 @@ Ensure the repository has the following permissions:
    - `major`: 1.0.0 → 2.0.0 (breaking changes)
    - `prerelease`: 1.0.0 → 1.0.1-beta.0 (beta versions)
 5. Click **Run workflow**
+
+### User Installation Options
+
+After publishing, users can install from either registry:
+
+#### From npm (Most Common)
+```bash
+# Install globally
+npm install -g pixel-forge
+
+# Or run directly with npx
+npx pixel-forge generate logo.png --web
+```
+
+#### From GitHub Packages
+```bash
+# Configure registry (one-time setup)
+npm config set @devints47:registry https://npm.pkg.github.com
+
+# Install globally
+npm install -g @devints47/pixel-forge
+
+# Or run directly with npx
+npx @devints47/pixel-forge generate logo.png --web
+```
+
+**Important**: Both installations provide the same CLI commands:
+- `pixel-forge` - Main command
+- `pforge` - Short alias
 
 ### CI/CD Automation
 

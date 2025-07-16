@@ -44,7 +44,7 @@ jobs:
         pixel-forge --help
         pforge --help
 
-  publish:
+  publish-npm:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
@@ -53,7 +53,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Setup Node.js
+    - name: Setup Node.js for npm
       uses: actions/setup-node@v4
       with:
         node-version: '20'
@@ -70,6 +70,42 @@ jobs:
       run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-github:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js for GitHub Packages
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        registry-url: 'https://npm.pkg.github.com'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build project
+      run: npm run build
+    
+    - name: Configure package for GitHub Packages
+      run: |
+        cp package.json package.json.backup
+        jq '.name = "@devints47/pixel-forge"' package.json > package.json.tmp
+        mv package.json.tmp package.json
+    
+    - name: Publish to GitHub Packages
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Restore original package.json
+      run: mv package.json.backup package.json
     
     - name: Create GitHub Release Assets
       run: |

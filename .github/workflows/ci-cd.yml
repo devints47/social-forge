@@ -1,15 +1,15 @@
 name: CI/CD Pipeline
 
 on:
-  push:
-    branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
-  release:
-    types: [ published ]
+  push:
+    branches: [ main, develop ]
 
 jobs:
+  # Matrix testing across Node.js versions
   test:
+    name: Test (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -28,11 +28,50 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
-    - name: Run linting
-      run: npm run lint
-    
     - name: Run tests
       run: npm test
+    
+    - name: Build project
+      run: npm run build
+
+  # Linting check
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run linting
+      run: npm run lint
+
+  # Build check
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
     
     - name: Build project
       run: npm run build
@@ -44,87 +83,10 @@ jobs:
         pixel-forge --help
         pforge --help
 
-  publish-npm:
-    needs: test
+  # Security audits
+  audit:
+    name: Security Audit
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' && github.event.action == 'published'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Setup Node.js for npm
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        registry-url: 'https://registry.npmjs.org'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Build project
-      run: npm run build
-    
-    - name: Publish to npm
-      run: npm publish
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  publish-github:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.event_name == 'release' && github.event.action == 'published'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Setup Node.js for GitHub Packages
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        registry-url: 'https://npm.pkg.github.com'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Build project
-      run: npm run build
-    
-    - name: Configure package for GitHub Packages
-      run: |
-        cp package.json package.json.backup
-        jq '.name = "@devints47/pixel-forge"' package.json > package.json.tmp
-        mv package.json.tmp package.json
-    
-    - name: Publish to GitHub Packages
-      run: npm publish
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Restore original package.json
-      run: mv package.json.backup package.json
-    
-    - name: Create GitHub Release Assets
-      run: |
-        npm pack
-        mv pixel-forge-*.tgz pixel-forge-${{ github.event.release.tag_name }}.tgz
-    
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./pixel-forge-${{ github.event.release.tag_name }}.tgz
-        asset_name: pixel-forge-${{ github.event.release.tag_name }}.tgz
-        asset_content_type: application/gzip
-
-  security:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
     - name: Checkout code
@@ -140,7 +102,25 @@ jobs:
       run: npm ci
     
     - name: Run security audit
-      run: npm audit --audit-level=moderate
+      run: npm audit
+
+  # High-level security audit
+  audit-high:
+    name: Security Audit (High)
+    runs-on: ubuntu-latest
     
-    - name: Check for outdated dependencies
-      run: npm outdated || true 
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run high-level security audit
+      run: npm audit --audit-level=high 

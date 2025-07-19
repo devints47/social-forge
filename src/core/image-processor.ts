@@ -4,7 +4,7 @@ import { promises as fs } from 'fs';
 
 export interface ImageProcessorOptions {
   quality?: number;
-  format?: 'png' | 'jpeg' | 'webp';
+  format?: 'png' | 'jpeg' | 'jpg' | 'webp' | 'avif' | 'tiff' | 'tif' | 'gif' | 'heif' | 'svg';
   background?: string;
   fit?: 'cover' | 'contain' | 'fill';
 }
@@ -17,6 +17,9 @@ export interface TextOptions {
   position?: 'center' | 'top' | 'bottom';
   offset?: { x: number; y: number };
 }
+
+// List of supported input formats
+export const SUPPORTED_INPUT_FORMATS = ['.png', '.jpg', '.jpeg', '.webp', '.avif', '.tiff', '.tif', '.gif', '.svg', '.bmp'];
 
 export class ImageProcessor {
   private source: string;
@@ -107,18 +110,32 @@ export class ImageProcessor {
    * Save image to file
    */
   async save(outputPath: string, options: ImageProcessorOptions = {}): Promise<void> {
-    const {
-      quality = 90,
-      format = path.extname(outputPath).slice(1) as 'png' | 'jpeg' | 'webp'
-    } = options;
+    // Get format from output path or options
+    let format = path.extname(outputPath).slice(1).toLowerCase();
+    if (options.format) {
+      format = options.format;
+    }
+    
+    // Normalize format names
+    if (format === 'jpg') format = 'jpeg';
+    if (format === 'tif') format = 'tiff';
+    
+    const quality = options.quality || 90;
 
     // Ensure output directory exists
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
 
-    // Process and save image
-    await this.sharp
-      .toFormat(format, { quality })
-      .toFile(outputPath);
+    // Process and save image with format-specific options
+    if (['jpeg', 'png', 'webp', 'avif', 'tiff', 'gif', 'heif'].includes(format)) {
+      await this.sharp
+        .toFormat(format as keyof sharp.FormatEnum, { quality })
+        .toFile(outputPath);
+    } else {
+      // Default to PNG for unsupported output formats
+      await this.sharp
+        .toFormat('png', { quality })
+        .toFile(outputPath);
+    }
   }
 
   /**

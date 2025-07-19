@@ -14,6 +14,7 @@ import { FaviconGenerator } from '../generators/favicon/favicon';
 import { PWAGenerator } from '../generators/pwa/pwa';
 import { WebSEOGenerator } from '../generators/web/seo';
 import { type PixelForgeConfig } from '../core/config-validator';
+import { SUPPORTED_INPUT_FORMATS } from '../core/image-processor';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageJson = require('../../package.json') as { name: string; version: string };
@@ -55,6 +56,14 @@ interface CLIOptions {
   backgroundColor?: string;
   template?: string;
   verbose?: boolean;
+}
+
+/**
+ * Check if the file is a supported image format
+ */
+function isValidImageFormat(filePath: string): boolean {
+  const ext = path.extname(filePath).toLowerCase();
+  return SUPPORTED_INPUT_FORMATS.includes(ext);
 }
 
 /**
@@ -563,12 +572,12 @@ program
 // Generate command
 program
   .command('generate <source>')
-  .description('Generate images from source file')
+  .description('Generate images from source file (supports PNG, JPEG, WebP, AVIF, TIFF, GIF, SVG, BMP)')
   .option('-o, --output <path>', 'Output directory', './public/images')
   .option('-c, --config <path>', 'Config file path')
   .option('-q, --quality <number>', 'Image quality (1-100)', '90')
   .option('-p, --prefix <path>', 'URL prefix for generated files', '/images/')
-  .option('-f, --format <format>', 'Output format (png|jpeg|both)', 'png')
+  .option('-f, --format <format>', 'Output format (png|jpeg|webp|avif|tiff|gif)', 'png')
   .option('--all', 'Generate all asset types')
   .option('--social', 'Generate standard social media assets (Facebook, Twitter, LinkedIn)')
   .option('--facebook', 'Generate Facebook assets only')
@@ -605,6 +614,12 @@ program
       // Validate source file
       const sourcePath = path.resolve(source);
       await fs.access(sourcePath);
+
+      // Check if the file format is supported
+      if (!isValidImageFormat(sourcePath)) {
+        const supportedFormats = SUPPORTED_INPUT_FORMATS.join(', ');
+        throw new Error(`Unsupported image format: ${path.extname(sourcePath)}. Please use one of the following: ${supportedFormats}`);
+      }
 
       console.log(`📷 Source image: ${sourcePath}`);
       
@@ -676,7 +691,7 @@ program
   .command('info')
   .description('Show platform coverage and capabilities')
   .action(() => {
-    console.log('🌍 Social Forge - Complete Web Development Toolkit\n');
+    console.log('🌍 Pixel Forge - Complete Web Development Toolkit\n');
     
     console.log('🚀 Quick Start for Web Developers:');
     console.log('  npx pixel-forge generate logo.png --web     # Complete web package');
@@ -720,6 +735,11 @@ program
     console.log('  • Zero external dependencies (uses Sharp)');
     console.log('  • Framework-agnostic with Next.js helpers');
     console.log('  • TypeScript-first with full type safety');
+    
+    console.log('\n🖼️ Supported Image Formats:');
+    console.log('  • Input: PNG, JPEG, WebP, AVIF, TIFF, GIF, SVG, BMP');
+    console.log('  • Output: PNG, JPEG, WebP, AVIF, TIFF, GIF, HEIF');
+    console.log('  • Auto-conversion between formats');
     
     console.log('\n🎯 Platform-Specific Generation:');
     console.log('  npx pixel-forge generate logo.png --facebook --twitter    # Multiple platforms');

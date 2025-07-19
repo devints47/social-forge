@@ -167,6 +167,7 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         branch: chore/update-version-v${{ steps.package-version.outputs.version }}
+        base: main
         title: "chore: update package.json to v${{ steps.package-version.outputs.version }}"
         body: |
           ## 📦 Version Update

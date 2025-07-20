@@ -162,28 +162,28 @@ jobs:
         git commit -m "chore: update package.json to v${{ steps.package-version.outputs.version }}"
         git push origin chore/update-version-v${{ steps.package-version.outputs.version }}
 
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v5
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        branch: chore/update-version-v${{ steps.package-version.outputs.version }}
-        base: main
-        title: "chore: update package.json to v${{ steps.package-version.outputs.version }}"
-        body: |
-          ## 📦 Version Update
-          
-          This PR updates `package.json` to match the published version.
-          
-          - **Published version**: v${{ steps.package-version.outputs.version }}
-          - **npm**: ${{ github.event.inputs.publish_to_npm == 'true' && '✅ Published' || '❌ Skipped' }}
-          - **GitHub Packages**: ${{ github.event.inputs.publish_to_github == 'true' && '✅ Published' || '❌ Skipped' }}
-          
-          ### Changes
-          - Updated `package.json` version to `${{ steps.package-version.outputs.version }}`
-          
-          This is an automated PR created after successful package publishing.
-        commit-message: "chore: update package.json to v${{ steps.package-version.outputs.version }}"
-        delete-branch: true
+#    - name: Create Pull Request
+#      uses: peter-evans/create-pull-request@v5
+#      with:
+#        token: ${{ secrets.GITHUB_TOKEN }}
+#        branch: chore/update-version-v${{ steps.package-version.outputs.version }}
+#        base: main
+#        title: "chore: update package.json to v${{ steps.package-version.outputs.version }}"
+#        body: |
+#          ## 📦 Version Update
+#          
+#          This PR updates `package.json` to match the published version.
+#          
+#          - **Published version**: v${{ steps.package-version.outputs.version }}
+#          - **npm**: ${{ github.event.inputs.publish_to_npm == 'true' && '✅ Published' || '❌ Skipped' }}
+#          - **GitHub Packages**: ${{ github.event.inputs.publish_to_github == 'true' && '✅ Published' || '❌ Skipped' }}
+#          
+#          ### Changes
+#          - Updated `package.json` version to `${{ steps.package-version.outputs.version }}`
+#          
+#          This is an automated PR created after successful package publishing.
+#        commit-message: "chore: update package.json to v${{ steps.package-version.outputs.version }}"
+#        delete-branch: true
     
     - name: Summary
       run: |

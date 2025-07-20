@@ -9,10 +9,10 @@ on:
         default: 'patch'
         type: choice
         options:
-        - patch
-        - minor
-        - major
-        - prerelease
+          - patch
+          - minor
+          - major
+          - prerelease
       tag:
         description: 'Prerelease tag (for prerelease only)'
         required: false
@@ -31,62 +31,71 @@ on:
 jobs:
   dual-publish:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         fetch-depth: 0
-    
+
     - name: Setup Node.js for npm
       uses: actions/setup-node@v4
       with:
         node-version: '20'
         registry-url: 'https://registry.npmjs.org'
         cache: 'npm'
-    
+
     - name: Configure Git
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-    
+
     - name: Install dependencies
       run: npm ci
-    
+
     - name: Run tests
       run: npm test
-    
+
     - name: Run linting
       run: npm run lint
-    
+
     - name: Build project
       run: npm run build
-    
+
+    # Version bump
     - name: Bump version (patch/minor/major)
       if: github.event.inputs.version != 'prerelease'
       run: npm version ${{ github.event.inputs.version }} --no-git-tag-version
-    
+
     - name: Bump version (prerelease)
       if: github.event.inputs.version == 'prerelease'
       run: npm version prerelease --preid=${{ github.event.inputs.tag }} --no-git-tag-version
-    
+
     - name: Get package version
       id: package-version
       run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+    # Generate changelog
+    - name: Generate changelog
+      run: |
+        npx conventional-changelog -p angular -i CHANGELOG.md -s
+        git add CHANGELOG.md package.json package-lock.json
+        git commit -m "chore(release): v${{ steps.package-version.outputs.version }}"
+        git push origin HEAD
 
     - name: Create git tag
       run: |
         git tag v${{ steps.package-version.outputs.version }}
         git push origin v${{ steps.package-version.outputs.version }}
-    
+
     # Publish to npm registry
     - name: Publish to npm
       if: github.event.inputs.publish_to_npm == 'true'
       run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-    
+
     # Publish to GitHub Packages
     - name: Setup Node.js for GitHub Packages
       if: github.event.inputs.publish_to_github == 'true'
@@ -95,32 +104,30 @@ jobs:
         node-version: '20'
         registry-url: 'https://npm.pkg.github.com'
         cache: 'npm'
-    
+
     - name: Configure package for GitHub Packages
       if: github.event.inputs.publish_to_github == 'true'
       run: |
         cp package.json package.json.backup
-        # Change name to scoped for GitHub Packages
         jq '.name = "@devints47/pixel-forge"' package.json > package.json.tmp
         mv package.json.tmp package.json
-        
-        # Update binary paths to work with scoped name
         jq '.bin = {
           "pixel-forge": "dist/cli/index.js",
           "pforge": "dist/cli/index.js"
         }' package.json > package.json.tmp
         mv package.json.tmp package.json
-    
+
     - name: Publish to GitHub Packages
       if: github.event.inputs.publish_to_github == 'true'
       run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
+
     - name: Restore original package.json
       if: github.event.inputs.publish_to_github == 'true'
       run: mv package.json.backup package.json
-    
+
+    # GitHub Release
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       env:
@@ -128,71 +135,22 @@ jobs:
       with:
         tag_name: v${{ steps.package-version.outputs.version }}
         name: Release v${{ steps.package-version.outputs.version }}
-        body: |
-          ## Changes in v${{ steps.package-version.outputs.version }}
-          
-          - Manual dual release via GitHub Actions
-          - Version bump: ${{ github.event.inputs.version }}
-          
-          ### Installation from npm
-          ```bash
-          npm install -g pixel-forge@${{ steps.package-version.outputs.version }}
-          # or run directly
-          npx pixel-forge generate logo.png --web
-          ```
-          
-          ### Installation from GitHub Packages
-          ```bash
-          npm install -g @devints47/pixel-forge@${{ steps.package-version.outputs.version }}
-          # or run directly  
-          npx @devints47/pixel-forge generate logo.png --web
-          ```
-          
-          ### CLI Commands (both registries)
-          - `pixel-forge` - Main command
-          - `pforge` - Short alias
+        body_path: CHANGELOG.md
         draft: false
         prerelease: ${{ github.event.inputs.version == 'prerelease' }}
 
-    # Create PR to update package.json version in repo
+    # Create PR to update package.json version (optional)
     - name: Create version update branch
       run: |
         git checkout -b chore/update-version-v${{ steps.package-version.outputs.version }}
-        git add package.json
-        git commit -m "chore: update package.json to v${{ steps.package-version.outputs.version }}"
+        git add package.json package-lock.json
+        git commit -m "chore: update version to v${{ steps.package-version.outputs.version }}"
         git push origin chore/update-version-v${{ steps.package-version.outputs.version }}
 
-#    - name: Create Pull Request
-#      uses: peter-evans/create-pull-request@v5
-#      with:
-#        token: ${{ secrets.GITHUB_TOKEN }}
-#        branch: chore/update-version-v${{ steps.package-version.outputs.version }}
-#        base: main
-#        title: "chore: update package.json to v${{ steps.package-version.outputs.version }}"
-#        body: |
-#          ## 📦 Version Update
-#          
-#          This PR updates `package.json` to match the published version.
-#          
-#          - **Published version**: v${{ steps.package-version.outputs.version }}
-#          - **npm**: ${{ github.event.inputs.publish_to_npm == 'true' && '✅ Published' || '❌ Skipped' }}
-#          - **GitHub Packages**: ${{ github.event.inputs.publish_to_github == 'true' && '✅ Published' || '❌ Skipped' }}
-#          
-#          ### Changes
-#          - Updated `package.json` version to `${{ steps.package-version.outputs.version }}`
-#          
-#          This is an automated PR created after successful package publishing.
-#        commit-message: "chore: update package.json to v${{ steps.package-version.outputs.version }}"
-#        delete-branch: true
-    
     - name: Summary
       run: |
         echo "## Publication Summary" >> $GITHUB_STEP_SUMMARY
         echo "- **Version**: v${{ steps.package-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
         echo "- **npm**: ${{ github.event.inputs.publish_to_npm == 'true' && '✅ Published' || '❌ Skipped' }}" >> $GITHUB_STEP_SUMMARY
         echo "- **GitHub Packages**: ${{ github.event.inputs.publish_to_github == 'true' && '✅ Published' || '❌ Skipped' }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Version PR**: Created automatically" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Usage:" >> $GITHUB_STEP_SUMMARY
-        echo "- npm: \`npx pixel-forge generate logo.png --web\`" >> $GITHUB_STEP_SUMMARY
-        echo "- GitHub: \`npx @devints47/pixel-forge generate logo.png --web\`" >> $GITHUB_STEP_SUMMARY 
+        echo "- **Changelog**: CHANGELOG.md updated" >> $GITHUB_STEP_SUMMARY

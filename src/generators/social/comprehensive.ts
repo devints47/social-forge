@@ -67,13 +67,13 @@ export class ComprehensiveSocialGenerator {
       includeStandard = true,
       includeInstagram = true,
       includeMessaging = true,
-      includePlatforms = true,
-      platforms = {}
+      includePlatforms = true
     } = options;
 
     // Generate standard social media formats (Facebook, Twitter, LinkedIn)
     if (includeStandard) {
-      await this.generateStandardSocial(options);
+      // OpenGraphGenerator uses config.socialPreview instead of options
+      await this.generateStandardSocial();
     }
 
     // Generate Instagram specific formats
@@ -94,12 +94,12 @@ export class ComprehensiveSocialGenerator {
 
   /**
    * Generate standard social media formats
+   * 
+   * Note: OpenGraphGenerator doesn't use the options directly,
+   * it uses config.socialPreview instead
    */
-  private async generateStandardSocial(options: ComprehensiveOptions): Promise<void> {
+  private async generateStandardSocial(): Promise<void> {
     const generator = new OpenGraphGenerator(this.sourceImage, this.config);
-    
-    // Note: OpenGraphGenerator uses config.socialPreview for options
-    // We would need to update the config or modify the generator
     await generator.generate();
   }
 

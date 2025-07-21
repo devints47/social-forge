@@ -1,6 +1,6 @@
 import path from 'path';
 import { promises as fs } from 'fs';
-import { ImageProcessor, ImageSizes } from '../../core/image-processor';
+import { ImageProcessor } from '../../core/image-processor';
 import type { PixelForgeConfig } from '../../core/config-validator';
 
 export interface PWAOptions {
@@ -97,9 +97,10 @@ export class PWAGenerator {
       const processor = new ImageProcessor(this.sourceImage);
       const outputPath = path.join(this.config.output.path, `pwa-maskable-${size}x${size}.png`);
 
-      // Add padding for safe area (20% on each side)
-      const safeSize = Math.round(size * 0.6);
-      const padding = Math.round((size - safeSize) / 2);
+      // For maskable icons, we would typically need to ensure the icon fits within a safe area
+      // But since we're using 'contain' fit, the icon will be properly centered and sized
+      // const safeSize = Math.round(size * 0.6);
+      // const padding = Math.round((size - safeSize) / 2);
 
       await processor
         .resize(size, size, { 
@@ -182,8 +183,9 @@ export class PWAGenerator {
     const processor = new ImageProcessor(this.sourceImage);
     const outputPath = path.join(this.config.output.path, `splash-${name}-${width}x${height}.png`);
 
-    // Create splash with centered logo
-    const logoSize = Math.min(width, height) * 0.3; // Logo is 30% of smallest dimension
+    // For splash screens, we would typically calculate logo size
+    // but since we're using 'contain' fit, the image will be properly sized
+    // const logoSize = Math.min(width, height) * 0.3; // Logo is 30% of smallest dimension
 
     await processor
       .resize(width, height, { 
@@ -199,7 +201,36 @@ export class PWAGenerator {
   private async generateManifest(includeShortcuts: boolean = false): Promise<void> {
     const prefix = this.config.output.prefix || '/';
     
-    const manifest: any = {
+    interface PWAManifest {
+      name: string;
+      short_name: string;
+      description: string;
+      theme_color: string;
+      background_color: string;
+      display: string;
+      orientation: string;
+      scope: string;
+      start_url: string;
+      id: string;
+      icons: Array<{
+        src: string;
+        sizes: string;
+        type: string;
+        purpose?: string;
+      }>;
+      screenshots: Array<{
+        src: string;
+        sizes: string;
+        type: string;
+        form_factor: string;
+      }>;
+      categories: string[];
+      lang: string;
+      dir: string;
+      shortcuts?: PWAManifestShortcut[];
+    }
+    
+    const manifest: PWAManifest = {
       name: this.config.appName,
       short_name: this.config.appName,
       description: this.config.description || '',

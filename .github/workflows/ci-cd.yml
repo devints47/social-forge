@@ -110,9 +110,9 @@ jobs:
     - name: Test CLI installation
       run: |
         pnpm pack
-        npm install -g ./pixel-forge-*.tgz
+        pnpm add -g ./pixel-forge-*.tgz
     
-        echo "Global npm bin is: $(npm bin -g)"
+        echo "Global pnpm bin is: $(pnpm bin -g)"
         export PATH="$(pnpm bin -g):$PATH"
     
         echo "Checking CLI location..."

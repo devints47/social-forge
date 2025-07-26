@@ -1,7 +1,7 @@
-import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
+const js = require('@eslint/js');
+const tseslint = require('typescript-eslint');
 
-export default tseslint.config(
+module.exports = tseslint.config(
   {
     // Global ignores
     ignores: [
@@ -26,7 +26,7 @@ export default tseslint.config(
       parser: tseslint.parser,
       parserOptions: {
         projectService: true,
-        tsconfigRootDir: import.meta.dirname,
+        tsconfigRootDir: __dirname,
       },
     },
     rules: {
@@ -43,20 +43,5 @@ export default tseslint.config(
       'prefer-const': 'error',
       'no-var': 'error',
     }
-  },
-  
-  // Override for test files
-  {
-    files: ['**/*.test.ts', '**/*.spec.ts'],
-    rules: {
-      'no-console': 'off',
-      '@typescript-eslint/no-explicit-any': 'off'
-    }
-  },
-  
-  // Disable type-aware linting for JS files if any exist
-  {
-    files: ['**/*.js', '**/*.mjs', '**/*.cjs'],
-    ...tseslint.configs.disableTypeChecked,
   }
 ); 

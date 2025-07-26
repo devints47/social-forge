@@ -113,7 +113,7 @@ jobs:
         npm install -g ./pixel-forge-*.tgz
     
         echo "Global npm bin is: $(npm bin -g)"
-        export PATH="$(npm bin -g):$PATH"
+        export PATH="$(pnpm bin -g):$PATH"
     
         echo "Checking CLI location..."
         which pixel-forge

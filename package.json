@@ -86,11 +86,7 @@
     "url": "https://github.com/sponsors/devints47"
   },
   "files": [
-    "dist/**/*.js",
-    "dist/**/*.d.ts",
-    "!dist/**/__tests__/**",
-    "!dist/**/*.test.*",
-    "!dist/**/*.spec.*",
+    "dist",
     "README.md",
     "LICENSE"
   ]

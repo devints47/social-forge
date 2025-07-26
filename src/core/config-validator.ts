@@ -120,7 +120,7 @@ export class ConfigValidator {
     try {
       const outputPath = path.resolve(output.path);
       await fs.access(path.dirname(outputPath));
-    } catch (error) {
+    } catch (_error) {
       this.errors.push(`Output directory ${output.path} is not accessible`);
     }
 

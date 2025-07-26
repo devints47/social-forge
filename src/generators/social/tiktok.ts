@@ -47,16 +47,60 @@ export class TikTokGenerator {
     const processor = new ImageProcessor(this.sourceImage);
     const outputPath = path.join(this.config.output.path, 'tiktok.png');
 
-    await processor
-      .createSocialPreview({
-        width: ImageSizes.social.tiktok.width,
-        height: ImageSizes.social.tiktok.height,
-        title,
-        description,
-        template,
-        background: this.config.backgroundColor
-      })
-      .save(outputPath);
+    const socialFile = await processor.createSocialPreview({
+      width: ImageSizes.social.tiktok.width,
+      height: ImageSizes.social.tiktok.height,
+      title,
+      description,
+      template,
+      background: this.config.backgroundColor
+    });
+    
+    const finalProcessor = new ImageProcessor(socialFile);
+    await finalProcessor.save(outputPath);
+    await processor.cleanup();
+  }
+
+  /**
+   * Generate standard TikTok image (1200x675)
+   */
+  private async generateStandardImage(title?: string, description?: string, template?: 'basic' | 'gradient' | 'custom'): Promise<void> {
+    const processor = new ImageProcessor(this.sourceImage);
+    const outputPath = path.join(this.config.output.path, 'tiktok-share.png');
+
+    const socialFile = await processor.createSocialPreview({
+      width: ImageSizes.social.tiktok.width,
+      height: ImageSizes.social.tiktok.height,
+      title,
+      description,
+      template,
+      background: this.config.backgroundColor
+    });
+    
+    const finalProcessor = new ImageProcessor(socialFile);
+    await finalProcessor.save(outputPath);
+    await processor.cleanup();
+  }
+
+  /**
+   * Generate square TikTok image (1200x1200)
+   */
+  private async generateSquareImage(title?: string, description?: string, template?: 'basic' | 'gradient' | 'custom'): Promise<void> {
+    const processor = new ImageProcessor(this.sourceImage);
+    const outputPath = path.join(this.config.output.path, 'tiktok-square.png');
+
+    const socialFile = await processor.createSocialPreview({
+      width: 1200,
+      height: 1200,
+      title,
+      description,
+      template,
+      background: this.config.backgroundColor
+    });
+    
+    const finalProcessor = new ImageProcessor(socialFile);
+    await finalProcessor.save(outputPath);
+    await processor.cleanup();
   }
 
   /**
@@ -66,16 +110,18 @@ export class TikTokGenerator {
     const processor = new ImageProcessor(this.sourceImage);
     const outputPath = path.join(this.config.output.path, 'tiktok-profile.png');
 
-    await processor
-      .createSocialPreview({
-        width: ImageSizes.social.instagramSquare.width, // Reuse Instagram square size
-        height: ImageSizes.social.instagramSquare.height,
-        title,
-        description,
-        template,
-        background: this.config.backgroundColor
-      })
-      .save(outputPath);
+    const socialFile = await processor.createSocialPreview({
+      width: ImageSizes.social.instagramSquare.width, // Reuse Instagram square size
+      height: ImageSizes.social.instagramSquare.height,
+      title,
+      description,
+      template,
+      background: this.config.backgroundColor
+    });
+    
+    const finalProcessor = new ImageProcessor(socialFile);
+    await finalProcessor.save(outputPath);
+    await processor.cleanup();
   }
 
   /**

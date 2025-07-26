@@ -96,7 +96,7 @@ async function loadConfig(configPath?: string, options: CLIOptions = {}): Promis
     try {
       const configContent = await fs.readFile(configPath, 'utf-8');
       config = JSON.parse(configContent);
-    } catch (error) {
+    } catch (_error) {
       console.warn(`Warning: Could not load config file ${configPath}. Using defaults.`);
     }
   }

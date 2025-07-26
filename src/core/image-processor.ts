@@ -40,12 +40,12 @@ export class ImageProcessor {
     try {
       await execFileAsync('magick', ['-version']);
       return true;
-    } catch (error) {
+    } catch (_error) {
       try {
         // Fallback to legacy 'convert' command
         await execFileAsync('convert', ['-version']);
         return true;
-      } catch (fallbackError) {
+      } catch (_fallbackError) {
         return false;
       }
     }
@@ -58,7 +58,7 @@ export class ImageProcessor {
     try {
       await execFileAsync('magick', ['-version']);
       return 'magick';
-    } catch (error) {
+    } catch (_error) {
       // Fallback to legacy 'convert' command
       return 'convert';
     }
@@ -365,7 +365,7 @@ export class ImageProcessor {
     const cleanupPromises = this.tempFiles.map(async (file) => {
       try {
         await fs.unlink(file);
-      } catch (error) {
+      } catch (_error) {
         // Ignore cleanup errors
       }
     });

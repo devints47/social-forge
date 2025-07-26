@@ -14,12 +14,12 @@
     "build:watch": "tsc --watch",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
-    "dev": "npm run build && node dist/cli/index.js",
+    "dev": "pnpm run build && node dist/cli/index.js",
     "start": "node dist/cli/index.js",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint",
+    "prepare": "pnpm run build",
+    "prepublishOnly": "pnpm test && pnpm run lint",
     "clean": "rimraf dist"
   },
   "keywords": [

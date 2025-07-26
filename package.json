@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "pixel-forge": "dist/cli/index.js",
-    "pforge": "dist/cli/index.js"
+    "pixel-forge": "dist/src/cli/index.js",
+    "pforge": "dist/src/cli/index.js"
   },
   "scripts": {
     "build": "tsc",

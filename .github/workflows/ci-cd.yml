@@ -110,7 +110,7 @@ jobs:
     - name: Test CLI installation
       run: |
         pnpm pack
-        pnpm add -g ./pixel-forge-*.tgz
+        pnpm add -g "$(pwd)/pixel-forge-*.tgz"
     
         echo "Global pnpm bin is: $(pnpm bin -g)"
         export PATH="$(pnpm bin -g):$PATH"

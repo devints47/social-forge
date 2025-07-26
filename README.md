@@ -6,6 +6,8 @@ Pixel Forge is a reliable TypeScript package that generates optimized images for
 
 **Built with ImageMagick for rock-solid reliability across all environments.**
 
+✨ **Enhanced with advanced transparency preservation techniques for perfect RGBA handling.**
+
 *Stop wrestling with image sizes. Start focusing on your content.* 
 
 **Perfect for web developers who want everything needed for modern web applications in one command.**
@@ -106,9 +108,10 @@ await generateAll(config);
 
 ### Reliable Image Processing
 - ✅ **ImageMagick Backend** - No native dependency compilation issues
+- ✅ **Perfect Transparency** - Advanced RGBA preservation prevents black backgrounds
 - ✅ **Cross-Platform** - Consistent results on Windows, macOS, and Linux
 - ✅ **10% Auto-Zoom** - Enhanced visibility for all generated icons
-- ✅ **Proper Format Support** - True ICO files, real SVG conversion
+- ✅ **Proper Format Support** - True ICO files, real SVG conversion with transparency
 - ✅ **Error Recovery** - Graceful fallbacks for edge cases
 
 ### Web Development Essentials
@@ -552,9 +555,22 @@ We welcome contributions! Social media platforms change frequently, and we need 
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
+## 🔧 Technical Details
+
+### **Advanced Transparency Preservation**
+
+Our implementation uses cutting-edge ImageMagick techniques discovered through extensive debugging:
+
+- **`-define png:color-type=6`** - Forces RGBA format, prevents 8-bit colormap conversion
+- **`-define png:bit-depth=8`** - Ensures proper bit depth for transparency
+- **`-filter lanczos`** - High-quality resampling preserves transparency edges
+- **`-background none`** - Proper transparent background handling during resize operations
+
+This eliminates the common "black background" problem that occurs when transparency information is lost during image processing.
+
 ## 🙏 Acknowledgments
 
-Built with [Sharp](https://sharp.pixelplumbing.com/) for fast, high-quality image processing.
+Built with [ImageMagick](https://imagemagick.org/) for reliable, cross-platform image processing.
 
 ---
 

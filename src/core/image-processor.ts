@@ -83,17 +83,25 @@ export class ImageProcessor {
     // Input file
     args.push(this.source);
 
-    // Apply zoom if specified
+    // Apply high-quality filtering for better transparency handling
+    args.push('-filter', 'lanczos');
+
+    // Apply zoom if specified (with transparency preservation)
     if (zoom !== 1.0) {
       const zoomPercent = Math.round(zoom * 100);
       args.push('-resize', `${zoomPercent}%`);
     }
 
-    // Handle different fit modes
+    // Handle different fit modes with transparency preservation
     if (fit === 'contain') {
       args.push('-resize', `${width}x${height}`);
       args.push('-gravity', 'center');
-      args.push('-background', background);
+      // Preserve transparency during extent operation
+      if (background === 'transparent') {
+        args.push('-background', 'none');
+      } else {
+        args.push('-background', background);
+      }
       args.push('-extent', `${width}x${height}`);
     } else if (fit === 'cover') {
       args.push('-resize', `${width}x${height}^`);
@@ -102,11 +110,6 @@ export class ImageProcessor {
     } else {
       // fill mode
       args.push('-resize', `${width}x${height}!`);
-    }
-
-    // Set background for transparency
-    if (background !== 'transparent') {
-      args.unshift('-background', background);
     }
 
     // Output file
@@ -186,7 +189,7 @@ export class ImageProcessor {
   }
 
   /**
-   * Save image to file with format conversion
+   * Save image to file with format conversion and transparency preservation
    */
   async save(outputPath: string, options: ImageProcessorOptions = {}): Promise<void> {
     // Get format from output path or options
@@ -209,12 +212,46 @@ export class ImageProcessor {
 
     args.push(this.source);
 
+    // PNG-specific transparency preservation (critical fix from debugging)
+    if (format === 'png') {
+      // Force RGBA transparency preservation - prevents 8-bit colormap conversion
+      args.push('-define', 'png:color-type=6');
+      
+      // Ensure proper bit depth for transparency
+      args.push('-define', 'png:bit-depth=8');
+      
+      // Optimize PNG compression
+      if (quality < 95) {
+        // Use adaptive filtering for better compression
+        args.push('-define', 'png:compression-filter=5');
+        args.push('-define', 'png:compression-level=9');
+      }
+      
+      // Ensure full range for web images
+      args.push('-define', 'png:format=png32');
+    }
+
     // Set quality for lossy formats
     if (['jpeg', 'webp', 'avif'].includes(format)) {
       args.push('-quality', quality.toString());
     }
 
-    // Set format
+    // ICO format requires special handling
+    if (format === 'ico') {
+      // Create proper ICO file with multiple sizes
+      args.push('-define', 'icon:auto-resize=256,128,64,48,32,16');
+      args.push('-compress', 'zip');
+    }
+
+    // WebP format optimization
+    if (format === 'webp') {
+      args.push('-define', 'webp:alpha-quality=100');
+      if (options.background === 'transparent') {
+        args.push('-define', 'webp:alpha-compression=1');
+      }
+    }
+
+    // Set output format with proper specification
     args.push(`${format.toUpperCase()}:${outputPath}`);
 
     try {

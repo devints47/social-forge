@@ -108,7 +108,7 @@ export class ImageProcessor {
       }
       
       return tempOutput;
-    } catch (error) {
+    } catch (_error) {
       // If copy fails (e.g., source doesn't exist), create an empty file
       await fs.writeFile(tempOutput, '');
       

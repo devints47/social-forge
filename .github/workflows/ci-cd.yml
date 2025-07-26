@@ -110,7 +110,8 @@ jobs:
     - name: Test CLI installation
       run: |
         pnpm pack
-        pnpm add -g "$(pwd)/pixel-forge-*.tgz"
+        TARBALL="$(ls pixel-forge-*.tgz)"
+        pnpm add -g "$(pwd)/$TARBALL"
     
         echo "Global pnpm bin is: $(pnpm bin -g)"
         export PATH="$(pnpm bin -g):$PATH"
@@ -119,6 +120,7 @@ jobs:
         which pixel-forge
     
         pixel-forge --help
+    
 
   # Security audits
   audit:

@@ -5,6 +5,19 @@ import { promises as fs } from 'fs';
 
 const execFileAsync = promisify(execFile);
 
+// Global flag to enable mock mode for testing
+let MOCK_MODE = false;
+
+// Enable mock mode for testing
+export function enableMockMode(): void {
+  MOCK_MODE = true;
+}
+
+// Disable mock mode
+export function disableMockMode(): void {
+  MOCK_MODE = false;
+}
+
 export interface ImageProcessorOptions {
   quality?: number;
   format?: 'png' | 'jpeg' | 'jpg' | 'webp' | 'avif' | 'tiff' | 'tif' | 'gif' | 'heif' | 'svg' | 'ico';
@@ -37,6 +50,10 @@ export class ImageProcessor {
    * Check if ImageMagick is available
    */
   static async checkImageMagick(): Promise<boolean> {
+    if (MOCK_MODE) {
+      return true; // Always return true in mock mode
+    }
+    
     try {
       await execFileAsync('magick', ['-version']);
       return true;
@@ -55,12 +72,51 @@ export class ImageProcessor {
    * Get the appropriate ImageMagick command
    */
   private static async getMagickCommand(): Promise<string> {
+    if (MOCK_MODE) {
+      return 'mock-magick'; // Return dummy command in mock mode
+    }
+    
     try {
       await execFileAsync('magick', ['-version']);
       return 'magick';
     } catch (_error) {
       // Fallback to legacy 'convert' command
       return 'convert';
+    }
+  }
+
+  /**
+   * Create a mock output file for testing
+   */
+  private async createMockOutputFile(outputPath?: string): Promise<string> {
+    // Create a temp path if none provided
+    const tempOutput = outputPath || path.join(
+      path.dirname(this.source), 
+      `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.png`
+    );
+    
+    // In mock mode, just copy the source file to the output path
+    try {
+      // Ensure directory exists
+      await fs.mkdir(path.dirname(tempOutput), { recursive: true });
+      
+      // Copy source to output in mock mode
+      await fs.copyFile(this.source, tempOutput);
+      
+      if (!outputPath) {
+        this.tempFiles.push(tempOutput);
+      }
+      
+      return tempOutput;
+    } catch (error) {
+      // If copy fails (e.g., source doesn't exist), create an empty file
+      await fs.writeFile(tempOutput, '');
+      
+      if (!outputPath) {
+        this.tempFiles.push(tempOutput);
+      }
+      
+      return tempOutput;
     }
   }
 
@@ -73,6 +129,11 @@ export class ImageProcessor {
       background = 'transparent',
       zoom = 1.0
     } = options;
+
+    // Use mock implementation in test mode
+    if (MOCK_MODE) {
+      return this.createMockOutputFile();
+    }
 
     const tempOutput = path.join(path.dirname(this.source), `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.png`);
     this.tempFiles.push(tempOutput);
@@ -136,6 +197,11 @@ export class ImageProcessor {
       offset = { x: 0, y: 0 }
     } = options;
 
+    // Use mock implementation in test mode
+    if (MOCK_MODE) {
+      return this.createMockOutputFile();
+    }
+
     const tempOutput = path.join(path.dirname(this.source), `temp-text-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.png`);
     this.tempFiles.push(tempOutput);
 
@@ -168,6 +234,11 @@ export class ImageProcessor {
    * Apply color overlay or tint using ImageMagick
    */
   async applyColor(inputFile: string, color: string, opacity: number = 0.5): Promise<string> {
+    // Use mock implementation in test mode
+    if (MOCK_MODE) {
+      return this.createMockOutputFile();
+    }
+
     const tempOutput = path.join(path.dirname(this.source), `temp-color-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.png`);
     this.tempFiles.push(tempOutput);
 
@@ -192,6 +263,12 @@ export class ImageProcessor {
    * Save image to file with format conversion and transparency preservation
    */
   async save(outputPath: string, options: ImageProcessorOptions = {}): Promise<void> {
+    // Use mock implementation in test mode
+    if (MOCK_MODE) {
+      await this.createMockOutputFile(outputPath);
+      return;
+    }
+    
     // Get format from output path or options
     let format = path.extname(outputPath).slice(1).toLowerCase();
     if (options.format) {
@@ -266,16 +343,19 @@ export class ImageProcessor {
    * Generate multiple sizes of the same image
    */
   async generateSizes(sizes: Array<{ width: number; height: number; name: string }>, outputDir: string, options: ImageProcessorOptions = {}): Promise<void> {
-    // Check ImageMagick availability first
-    const isAvailable = await ImageProcessor.checkImageMagick();
-    if (!isAvailable) {
-      throw new Error(
-        'ImageMagick is not installed or not found in PATH. ' +
-        'Please install ImageMagick:\n' +
-        '- macOS: brew install imagemagick\n' +
-        '- Ubuntu/Debian: apt-get install imagemagick\n' +
-        '- Windows: choco install imagemagick or download from https://imagemagick.org'
-      );
+    // In mock mode, skip ImageMagick check
+    if (!MOCK_MODE) {
+      // Check ImageMagick availability first
+      const isAvailable = await ImageProcessor.checkImageMagick();
+      if (!isAvailable) {
+        throw new Error(
+          'ImageMagick is not installed or not found in PATH. ' +
+          'Please install ImageMagick:\n' +
+          '- macOS: brew install imagemagick\n' +
+          '- Ubuntu/Debian: apt-get install imagemagick\n' +
+          '- Windows: choco install imagemagick or download from https://imagemagick.org'
+        );
+      }
     }
 
     const results: Promise<void>[] = [];
@@ -286,10 +366,10 @@ export class ImageProcessor {
           const resizedFile = await this.resize(size.width, size.height, options);
           const processor = new ImageProcessor(resizedFile);
           await processor.save(path.join(outputDir, size.name), options);
-                 } catch (error) {
-           const errorMessage = error instanceof Error ? error.message : String(error);
-           throw new Error(`Failed to generate size ${size.width}x${size.height}: ${errorMessage}`);
-         }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          throw new Error(`Failed to generate size ${size.width}x${size.height}: ${errorMessage}`);
+        }
       })();
       
       results.push(promise);
@@ -323,6 +403,11 @@ export class ImageProcessor {
       template = 'basic',
       background = '#000000'
     } = options;
+
+    // Use mock implementation in test mode
+    if (MOCK_MODE) {
+      return this.createMockOutputFile();
+    }
 
     // Start with resized base image
     let currentFile = await this.resize(width, height, {

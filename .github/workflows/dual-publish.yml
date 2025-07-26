@@ -39,6 +39,12 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         fetch-depth: 0
 
+    - name: Install ImageMagick
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y imagemagick
+        convert --version
+
     - name: Install pnpm
       uses: pnpm/action-setup@v4
       with:

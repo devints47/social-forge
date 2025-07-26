@@ -70,12 +70,12 @@
     "typescript": "~5.3.3"
   },
   "dependencies": {
-    "@types/sharp": "^0.31.1",
     "chalk": "^5.0.0",
     "commander": "^11.1.0",
     "conf": "^11.0.0",
     "ora": "^7.0.0",
-    "sharp": "^0.33.5"
+    "execa": "^8.0.0",
+    "command-exists": "^1.2.9"
   },
   "engines": {
     "node": ">=18.0.0"

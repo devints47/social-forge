@@ -2,13 +2,32 @@
 
 > The complete image generation toolkit for modern web development
 
-Pixel Forge is a zero-dependency TypeScript package that generates optimized images for social media previews, favicons, SEO metadata, and PWA assets across **all major platforms** - from Facebook and Instagram to TikTok, WhatsApp, Discord, to iMessage, SMS, RCS, and more.
+Pixel Forge is a reliable TypeScript package that generates optimized images for social media previews, favicons, SEO metadata, and PWA assets across **all major platforms** - from Facebook and Instagram to TikTok, WhatsApp, Discord, to iMessage, SMS, RCS, and more.
+
+**Built with ImageMagick for rock-solid reliability across all environments.**
 
 *Stop wrestling with image sizes. Start focusing on your content.* 
 
 **Perfect for web developers who want everything needed for modern web applications in one command.**
 
 ## 🚀 Quick Start
+
+### Prerequisites
+
+Pixel Forge requires ImageMagick to be installed on your system:
+
+```bash
+# macOS
+brew install imagemagick
+
+# Ubuntu/Debian
+sudo apt-get install imagemagick
+
+# Windows (using Chocolatey)
+choco install imagemagick
+
+# Or download from: https://imagemagick.org/script/download.php
+```
 
 ### No Installation Required!
 
@@ -77,12 +96,20 @@ await generateAll(config);
 
 - 🌍 **Complete Web Coverage** - Generates everything from favicons to social sharing images
 - 📱 **Modern Standards** - Supports PWA, OpenGraph, Twitter Cards, Apple Touch Icons, and more
-- 🚀 **Zero Dependencies** - Uses Sharp for image processing, no external binaries required  
+- 🔧 **ImageMagick Powered** - Battle-tested image processing with superior reliability
 - ⚡ **Framework Agnostic** - Works with any framework, includes Next.js helpers
 - 🎯 **Developer-First** - One command generates everything you need for SEO and social sharing
 - 🔧 **TypeScript First** - Full type safety and IntelliSense support
+- 💪 **Production Ready** - Reliable across all platforms and environments
 
-## 🌟 Features
+## 🌟 Key Features
+
+### Reliable Image Processing
+- ✅ **ImageMagick Backend** - No native dependency compilation issues
+- ✅ **Cross-Platform** - Consistent results on Windows, macOS, and Linux
+- ✅ **10% Auto-Zoom** - Enhanced visibility for all generated icons
+- ✅ **Proper Format Support** - True ICO files, real SVG conversion
+- ✅ **Error Recovery** - Graceful fallbacks for edge cases
 
 ### Web Development Essentials
 - ✅ **SEO Images** - OpenGraph (og-image.png/jpg), Twitter Cards, generic social sharing

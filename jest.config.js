@@ -1,5 +1,5 @@
 /** @type {import('jest').Config} */
-module.exports = {
+export default {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
@@ -19,5 +19,11 @@ module.exports = {
       lines: 80,
       statements: 80
     }
-  }
+  },
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', {
+      useESM: true,
+    }]
+  },
+  extensionsToTreatAsEsm: ['.ts']
 }; 

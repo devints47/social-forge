@@ -23,7 +23,7 @@ export class OpenGraphGenerator {
    * Generate OpenGraph images for various platforms
    */
   async generate(): Promise<void> {
-    const { output, socialPreview } = this.config;
+    const { socialPreview } = this.config;
     const options = socialPreview || {};
 
     // Generate Facebook/Default OpenGraph Image

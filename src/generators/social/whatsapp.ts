@@ -47,16 +47,18 @@ export class WhatsAppGenerator {
     const processor = new ImageProcessor(this.sourceImage);
     const outputPath = path.join(this.config.output.path, 'whatsapp-profile.png');
 
-    await processor
-      .createSocialPreview({
-        width: ImageSizes.messaging.whatsapp.width,
-        height: ImageSizes.messaging.whatsapp.height,
-        title,
-        description,
-        template,
-        background: this.config.backgroundColor
-      })
-      .save(outputPath);
+    const socialFile = await processor.createSocialPreview({
+      width: ImageSizes.messaging.whatsapp.width,
+      height: ImageSizes.messaging.whatsapp.height,
+      title,
+      description,
+      template,
+      background: this.config.backgroundColor
+    });
+    
+    const finalProcessor = new ImageProcessor(socialFile);
+    await finalProcessor.save(outputPath);
+    await processor.cleanup();
   }
 
   /**
@@ -66,16 +68,60 @@ export class WhatsAppGenerator {
     const processor = new ImageProcessor(this.sourceImage);
     const outputPath = path.join(this.config.output.path, 'whatsapp-link.png');
 
-    await processor
-      .createSocialPreview({
-        width: ImageSizes.messaging.whatsappLink.width,
-        height: ImageSizes.messaging.whatsappLink.height,
-        title,
-        description,
-        template,
-        background: this.config.backgroundColor
-      })
-      .save(outputPath);
+    const socialFile = await processor.createSocialPreview({
+      width: ImageSizes.messaging.whatsappLink.width,
+      height: ImageSizes.messaging.whatsappLink.height,
+      title,
+      description,
+      template,
+      background: this.config.backgroundColor
+    });
+    
+    const finalProcessor = new ImageProcessor(socialFile);
+    await finalProcessor.save(outputPath);
+    await processor.cleanup();
+  }
+
+  /**
+   * Generate standard WhatsApp sharing image (1200x630)
+   */
+  private async generateStandardImage(title?: string, description?: string, template?: 'basic' | 'gradient' | 'custom'): Promise<void> {
+    const processor = new ImageProcessor(this.sourceImage);
+    const outputPath = path.join(this.config.output.path, 'whatsapp-share.png');
+
+         const socialFile = await processor.createSocialPreview({
+       width: ImageSizes.messaging.whatsappLink.width,
+       height: ImageSizes.messaging.whatsappLink.height,
+       title,
+       description,
+       template,
+       background: this.config.backgroundColor
+     });
+    
+    const finalProcessor = new ImageProcessor(socialFile);
+    await finalProcessor.save(outputPath);
+    await processor.cleanup();
+  }
+
+  /**
+   * Generate square WhatsApp image (1200x1200)
+   */
+  private async generateSquareImage(title?: string, description?: string, template?: 'basic' | 'gradient' | 'custom'): Promise<void> {
+    const processor = new ImageProcessor(this.sourceImage);
+    const outputPath = path.join(this.config.output.path, 'whatsapp-square.png');
+
+    const socialFile = await processor.createSocialPreview({
+      width: 1200,
+      height: 1200,
+      title,
+      description,
+      template,
+      background: this.config.backgroundColor
+    });
+    
+    const finalProcessor = new ImageProcessor(socialFile);
+    await finalProcessor.save(outputPath);
+    await processor.cleanup();
   }
 
   /**

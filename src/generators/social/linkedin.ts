@@ -45,18 +45,20 @@ export class LinkedInGenerator {
    */
   private async generateStandardImage(title?: string, description?: string, template?: 'basic' | 'gradient' | 'custom'): Promise<void> {
     const processor = new ImageProcessor(this.sourceImage);
-    const outputPath = path.join(this.config.output.path, 'linkedin.png');
+    const outputPath = path.join(this.config.output.path, 'linkedin-share.png');
 
-    await processor
-      .createSocialPreview({
-        width: ImageSizes.social.linkedin.width,
-        height: ImageSizes.social.linkedin.height,
-        title,
-        description,
-        template,
-        background: this.config.backgroundColor
-      })
-      .save(outputPath);
+    const socialFile = await processor.createSocialPreview({
+      width: ImageSizes.social.linkedin.width,
+      height: ImageSizes.social.linkedin.height,
+      title,
+      description,
+      template,
+      background: this.config.backgroundColor
+    });
+    
+    const finalProcessor = new ImageProcessor(socialFile);
+    await finalProcessor.save(outputPath);
+    await processor.cleanup();
   }
 
   /**
@@ -66,16 +68,39 @@ export class LinkedInGenerator {
     const processor = new ImageProcessor(this.sourceImage);
     const outputPath = path.join(this.config.output.path, 'linkedin-company.png');
 
-    await processor
-      .createSocialPreview({
-        width: ImageSizes.social.linkedinCompany.width,
-        height: ImageSizes.social.linkedinCompany.height,
-        title,
-        description,
-        template,
-        background: this.config.backgroundColor
-      })
-      .save(outputPath);
+    const socialFile = await processor.createSocialPreview({
+      width: ImageSizes.social.linkedinCompany.width,
+      height: ImageSizes.social.linkedinCompany.height,
+      title,
+      description,
+      template,
+      background: this.config.backgroundColor
+    });
+    
+    const finalProcessor = new ImageProcessor(socialFile);
+    await finalProcessor.save(outputPath);
+    await processor.cleanup();
+  }
+
+  /**
+   * Generate square LinkedIn image (1200x1200)
+   */
+  private async generateSquareImage(title?: string, description?: string, template?: 'basic' | 'gradient' | 'custom'): Promise<void> {
+    const processor = new ImageProcessor(this.sourceImage);
+    const outputPath = path.join(this.config.output.path, 'linkedin-square.png');
+
+    const socialFile = await processor.createSocialPreview({
+      width: 1200,
+      height: 1200,
+      title,
+      description,
+      template,
+      background: this.config.backgroundColor
+    });
+    
+    const finalProcessor = new ImageProcessor(socialFile);
+    await finalProcessor.save(outputPath);
+    await processor.cleanup();
   }
 
   /**

@@ -1,10 +1,11 @@
-import { describe, expect, it, beforeEach, afterEach } from '@jest/globals';
+import { describe, expect, it, beforeEach, afterEach, beforeAll, afterAll } from '@jest/globals';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { ComprehensiveSocialGenerator } from '../comprehensive';
 import { InstagramGenerator } from '../instagram';
 import { MessagingGenerator } from '../messaging';
 import { PlatformGenerator } from '../platforms';
+import { enableMockMode, disableMockMode } from '../../../core/image-processor';
 import type { PixelForgeConfig } from '../../../core/config-validator';
 
 describe('Comprehensive Social Media Generators', () => {
@@ -19,6 +20,40 @@ describe('Comprehensive Social Media Generators', () => {
       quality: 90
     }
   };
+
+  beforeAll(async () => {
+    // Enable mock mode for testing without ImageMagick
+    enableMockMode();
+    
+    // Create a test image if it doesn't exist
+    const testImageDir = path.join(__dirname, 'fixtures');
+    const testImagePath = path.join(testImageDir, 'test-image.png');
+    
+    try {
+      await fs.mkdir(testImageDir, { recursive: true });
+      // Check if test image exists, if not create a simple one
+      try {
+        await fs.access(testImagePath);
+      } catch {
+        // Create a small empty file as a placeholder
+        await fs.writeFile(testImagePath, Buffer.from([
+          0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 
+          0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 
+          0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00, 
+          0x0A, 0x49, 0x44, 0x41, 0x54, 0x08, 0xD7, 0x63, 0x60, 0x00, 0x00, 0x00, 
+          0x02, 0x00, 0x01, 0xE2, 0x21, 0xBC, 0x33, 0x00, 0x00, 0x00, 0x00, 0x49, 
+          0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
+        ]));
+      }
+    } catch (error) {
+      console.error('Error setting up test image:', error);
+    }
+  });
+
+  afterAll(() => {
+    // Disable mock mode
+    disableMockMode();
+  });
 
   beforeEach(async () => {
     // Create output directory

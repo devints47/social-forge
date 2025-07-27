@@ -76,59 +76,114 @@ export class FaviconGenerator {
    * Generate standard PNG favicons in multiple sizes
    */
   private async generatePNGFavicons(): Promise<void> {
-    for (const size of ImageSizes.favicon) {
-      const processor = new ImageProcessor(this.sourceImage);
-      const outputPath = path.join(this.config.output.path, `favicon-${size}x${size}.png`);
+    const promises: Promise<void>[] = [];
 
-      await processor
-        .resize(size, size, { fit: 'contain', background: 'transparent' })
-        .save(outputPath);
+    for (const size of ImageSizes.favicon) {
+      const promise = (async () => {
+        const processor = new ImageProcessor(this.sourceImage);
+        const resizedFile = await processor.resize(size, size, { 
+          fit: 'contain', 
+          background: 'transparent',
+          zoom: 1.1 // Add 10% zoom for better visibility
+        });
+        const finalProcessor = new ImageProcessor(resizedFile);
+        const outputPath = path.join(this.config.output.path, `favicon-${size}x${size}.png`);
+        await finalProcessor.save(outputPath);
+        await processor.cleanup();
+        await finalProcessor.cleanup();
+      })();
+      promises.push(promise);
     }
 
     // Also generate favicon.png (32x32 default)
-    const processor = new ImageProcessor(this.sourceImage);
-    const outputPath = path.join(this.config.output.path, 'favicon.png');
-    await processor
-      .resize(32, 32, { fit: 'contain', background: 'transparent' })
-      .save(outputPath);
+    const defaultPromise = (async () => {
+      const processor = new ImageProcessor(this.sourceImage);
+      const resizedFile = await processor.resize(32, 32, { 
+        fit: 'contain', 
+        background: 'transparent',
+        zoom: 1.1
+      });
+      const finalProcessor = new ImageProcessor(resizedFile);
+      const outputPath = path.join(this.config.output.path, 'favicon.png');
+      await finalProcessor.save(outputPath);
+      await processor.cleanup();
+      await finalProcessor.cleanup();
+    })();
+    promises.push(defaultPromise);
+
+    await Promise.all(promises);
   }
 
   /**
-   * Generate multi-size ICO file
+   * Generate multi-size ICO file using ImageMagick's native ICO support
    */
   private async generateICOFavicon(): Promise<void> {
-    // For ICO generation, we'll create a 32x32 PNG and rename it
-    // Sharp doesn't natively support ICO, but most modern browsers accept PNG
     const processor = new ImageProcessor(this.sourceImage);
     const outputPath = path.join(this.config.output.path, 'favicon.ico');
     
-    await processor
-      .resize(32, 32, { fit: 'contain', background: 'transparent' })
-      .save(outputPath.replace('.ico', '.png'));
-    
-    // Rename PNG to ICO (browsers will handle it)
-    await fs.rename(outputPath.replace('.ico', '.png'), outputPath);
+    // ImageMagick can create proper ICO files with multiple sizes
+    try {
+      const resizedFile = await processor.resize(32, 32, { 
+        fit: 'contain', 
+        background: 'transparent',
+        zoom: 1.1
+      });
+      const finalProcessor = new ImageProcessor(resizedFile);
+      await finalProcessor.save(outputPath, { format: 'ico' });
+      await processor.cleanup();
+      await finalProcessor.cleanup();
+    } catch (error) {
+      // Fallback to PNG with ICO extension for compatibility
+      console.warn('ICO generation failed, falling back to PNG format');
+      const resizedFile = await processor.resize(32, 32, { 
+        fit: 'contain', 
+        background: 'transparent',
+        zoom: 1.1
+      });
+      const finalProcessor = new ImageProcessor(resizedFile);
+      await finalProcessor.save(outputPath.replace('.ico', '.png'));
+      await fs.rename(outputPath.replace('.ico', '.png'), outputPath);
+      await processor.cleanup();
+      await finalProcessor.cleanup();
+    }
   }
 
   /**
    * Generate SVG favicon for modern browsers
    */
   private async generateSVGFavicon(): Promise<void> {
-    // If source is already SVG, copy it; otherwise convert
     const outputPath = path.join(this.config.output.path, 'favicon.svg');
     
     if (this.sourceImage.endsWith('.svg')) {
       // Copy existing SVG
       await fs.copyFile(this.sourceImage, outputPath);
     } else {
-      // Convert to SVG-compatible format
+      // Convert to SVG using ImageMagick (better than Sharp's approach)
       const processor = new ImageProcessor(this.sourceImage);
-      await processor
-        .resize(64, 64, { fit: 'contain', background: 'transparent' })
-        .save(outputPath.replace('.svg', '.png'));
-      
-      // Note: True SVG conversion would require additional libraries
-      // For now, we'll use PNG format with SVG filename for compatibility
+      try {
+        const resizedFile = await processor.resize(64, 64, { 
+          fit: 'contain', 
+          background: 'transparent',
+          zoom: 1.1
+        });
+        const finalProcessor = new ImageProcessor(resizedFile);
+        await finalProcessor.save(outputPath, { format: 'svg' });
+        await processor.cleanup();
+        await finalProcessor.cleanup();
+      } catch (error) {
+        // Fallback to PNG with SVG extension if SVG conversion fails
+        console.warn('SVG generation failed, creating PNG with SVG extension for compatibility');
+        const resizedFile = await processor.resize(64, 64, { 
+          fit: 'contain', 
+          background: 'transparent',
+          zoom: 1.1
+        });
+        const finalProcessor = new ImageProcessor(resizedFile);
+        await finalProcessor.save(outputPath.replace('.svg', '.png'));
+        await fs.rename(outputPath.replace('.svg', '.png'), outputPath);
+        await processor.cleanup();
+        await finalProcessor.cleanup();
+      }
     }
   }
 
@@ -136,35 +191,68 @@ export class FaviconGenerator {
    * Generate Apple touch icons
    */
   private async generateAppleIcons(): Promise<void> {
-    for (const size of ImageSizes.apple) {
-      const processor = new ImageProcessor(this.sourceImage);
-      const outputPath = path.join(this.config.output.path, `apple-touch-icon-${size}x${size}.png`);
+    const promises: Promise<void>[] = [];
 
-      await processor
-        .resize(size, size, { fit: 'contain', background: this.config.backgroundColor })
-        .save(outputPath);
+    for (const size of ImageSizes.apple) {
+      const promise = (async () => {
+        const processor = new ImageProcessor(this.sourceImage);
+        const resizedFile = await processor.resize(size, size, { 
+          fit: 'contain', 
+          background: this.config.backgroundColor,
+          zoom: 1.1
+        });
+        const finalProcessor = new ImageProcessor(resizedFile);
+        const outputPath = path.join(this.config.output.path, `apple-touch-icon-${size}x${size}.png`);
+        await finalProcessor.save(outputPath);
+        await processor.cleanup();
+        await finalProcessor.cleanup();
+      })();
+      promises.push(promise);
     }
 
     // Standard apple-touch-icon.png (180x180)
-    const processor = new ImageProcessor(this.sourceImage);
-    const outputPath = path.join(this.config.output.path, 'apple-touch-icon.png');
-    await processor
-      .resize(180, 180, { fit: 'contain', background: this.config.backgroundColor })
-      .save(outputPath);
+    const defaultPromise = (async () => {
+      const processor = new ImageProcessor(this.sourceImage);
+      const resizedFile = await processor.resize(180, 180, { 
+        fit: 'contain', 
+        background: this.config.backgroundColor,
+        zoom: 1.1
+      });
+      const finalProcessor = new ImageProcessor(resizedFile);
+      const outputPath = path.join(this.config.output.path, 'apple-touch-icon.png');
+      await finalProcessor.save(outputPath);
+      await processor.cleanup();
+      await finalProcessor.cleanup();
+    })();
+    promises.push(defaultPromise);
+
+    await Promise.all(promises);
   }
 
   /**
    * Generate Android/PWA icons
    */
   private async generateAndroidIcons(): Promise<void> {
-    for (const size of ImageSizes.android) {
-      const processor = new ImageProcessor(this.sourceImage);
-      const outputPath = path.join(this.config.output.path, `android-chrome-${size}x${size}.png`);
+    const promises: Promise<void>[] = [];
 
-      await processor
-        .resize(size, size, { fit: 'contain', background: this.config.backgroundColor })
-        .save(outputPath);
+    for (const size of ImageSizes.android) {
+      const promise = (async () => {
+        const processor = new ImageProcessor(this.sourceImage);
+        const resizedFile = await processor.resize(size, size, { 
+          fit: 'contain', 
+          background: this.config.backgroundColor,
+          zoom: 1.1
+        });
+        const finalProcessor = new ImageProcessor(resizedFile);
+        const outputPath = path.join(this.config.output.path, `android-chrome-${size}x${size}.png`);
+        await finalProcessor.save(outputPath);
+        await processor.cleanup();
+        await finalProcessor.cleanup();
+      })();
+      promises.push(promise);
     }
+
+    await Promise.all(promises);
 
     // Generate web app manifest
     await this.generateManifest();
@@ -174,17 +262,26 @@ export class FaviconGenerator {
    * Generate Windows tiles (Microsoft)
    */
   private async generateWindowsTiles(): Promise<void> {
-    for (const size of ImageSizes.mstile) {
-      const processor = new ImageProcessor(this.sourceImage);
-      const outputPath = path.join(this.config.output.path, `mstile-${size.width}x${size.height}.png`);
+    const promises: Promise<void>[] = [];
 
-      await processor
-        .resize(size.width, size.height, { 
+    for (const size of ImageSizes.mstile) {
+      const promise = (async () => {
+        const processor = new ImageProcessor(this.sourceImage);
+        const resizedFile = await processor.resize(size.width, size.height, { 
           fit: 'contain', 
-          background: this.config.themeColor 
-        })
-        .save(outputPath);
+          background: this.config.themeColor,
+          zoom: 1.1
+        });
+        const finalProcessor = new ImageProcessor(resizedFile);
+        const outputPath = path.join(this.config.output.path, `mstile-${size.width}x${size.height}.png`);
+        await finalProcessor.save(outputPath);
+        await processor.cleanup();
+        await finalProcessor.cleanup();
+      })();
+      promises.push(promise);
     }
+
+    await Promise.all(promises);
 
     // Generate browserconfig.xml
     await this.generateBrowserConfig();

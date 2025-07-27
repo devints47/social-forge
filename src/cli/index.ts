@@ -3,6 +3,7 @@
 import { program } from 'commander';
 import path from 'path';
 import { promises as fs } from 'fs';
+import chalk from 'chalk';
 import { ComprehensiveSocialGenerator } from '../generators/social/comprehensive';
 import { FacebookGenerator } from '../generators/social/facebook';
 import { TwitterGenerator } from '../generators/social/twitter';
@@ -14,10 +15,28 @@ import { FaviconGenerator } from '../generators/favicon/favicon';
 import { PWAGenerator } from '../generators/pwa/pwa';
 import { WebSEOGenerator } from '../generators/web/seo';
 import { type PixelForgeConfig } from '../core/config-validator';
-import { SUPPORTED_INPUT_FORMATS } from '../core/image-processor';
+import { SUPPORTED_INPUT_FORMATS, ImageProcessor } from '../core/image-processor';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const packageJson = require('../../package.json') as { name: string; version: string };
+// Import package.json as a module instead of using require
+import packageJson from '../../package.json';
+
+/**
+ * Check if ImageMagick is available and show helpful error if not
+ */
+async function checkImageMagickAvailability(): Promise<void> {
+  const isAvailable = await ImageProcessor.checkImageMagick();
+  
+  if (!isAvailable) {
+    console.error(chalk.red('\n❌ ImageMagick is required but not found!\n'));
+    console.error(chalk.yellow('Please install ImageMagick first:\n'));
+    console.error(chalk.cyan('  macOS:'), '        brew install imagemagick');
+    console.error(chalk.cyan('  Ubuntu/Debian:'), ' sudo apt-get install imagemagick');
+    console.error(chalk.cyan('  Windows:'), '      choco install imagemagick');
+    console.error(chalk.cyan('  Or download:'), '   https://imagemagick.org/script/download.php\n');
+    console.error(chalk.gray('After installation, restart your terminal and try again.\n'));
+    process.exit(1);
+  }
+}
 
 interface CLIOptions {
   output?: string;
@@ -76,8 +95,9 @@ async function loadConfig(configPath?: string, options: CLIOptions = {}): Promis
   if (configPath) {
     try {
       const configContent = await fs.readFile(configPath, 'utf-8');
-      config = JSON.parse(configContent);
-    } catch (error) {
+      // Fix unsafe assignment by using a type assertion
+      config = JSON.parse(configContent) as Partial<PixelForgeConfig>;
+    } catch (_error) {
       console.warn(`Warning: Could not load config file ${configPath}. Using defaults.`);
     }
   }
@@ -492,8 +512,7 @@ async function generateSpecific(sourceImage: string, config: PixelForgeConfig, o
 /**
  * Show meta tags for generated assets
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function showMetaTags(sourceImage: string, config: PixelForgeConfig, options: CLIOptions) {
+async function showMetaTags(sourceImage: string, config: PixelForgeConfig, _options: CLIOptions) {
   console.log('🏷️  HTML Meta Tags:\n');
 
   const generators = [
@@ -504,10 +523,12 @@ async function showMetaTags(sourceImage: string, config: PixelForgeConfig, optio
 
   const allTags: string[] = [];
   
-  for (const generator of generators) {
+  // Add an await to fix the require-await warning
+  await Promise.all(generators.map(generator => {
     const tags = generator.getMetaTags();
     allTags.push(...tags);
-  }
+    return Promise.resolve(); // Return a resolved promise for Promise.all
+  }));
 
   // Remove duplicates and sort
   const uniqueTags = [...new Set(allTags)].sort();
@@ -611,6 +632,9 @@ program
   .option('-v, --verbose', 'Verbose output')
   .action(async (source: string, options: CLIOptions) => {
     try {
+      // Check ImageMagick availability first
+      await checkImageMagickAvailability();
+      
       // Validate source file
       const sourcePath = path.resolve(source);
       await fs.access(sourcePath);

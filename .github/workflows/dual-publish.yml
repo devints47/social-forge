@@ -1,160 +1,90 @@
-name: Dual Publish (npm + GitHub Packages)
+name: Dual Publish
 
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version bump type'
-        required: true
-        default: 'patch'
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
-          - prerelease
-      tag:
-        description: 'Prerelease tag (for prerelease only)'
-        required: false
-        default: 'beta'
       publish_to_npm:
-        description: 'Publish to npm registry'
-        required: true
-        default: true
-        type: boolean
+        description: 'Publish to npm?'
+        required: false
+        default: 'true'
       publish_to_github:
-        description: 'Publish to GitHub Packages'
-        required: true
-        default: true
-        type: boolean
+        description: 'Publish to GitHub Packages?'
+        required: false
+        default: 'true'
 
 jobs:
-  dual-publish:
+  build-and-publish:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        fetch-depth: 0
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-    - name: Install ImageMagick
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y imagemagick
-        convert --version
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
 
-    - name: Install pnpm
-      uses: pnpm/action-setup@v4
-      with:
-        version: 9
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
-    - name: Setup Node.js for npm
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        registry-url: 'https://registry.npmjs.org'
-        cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-    - name: Configure Git
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+      - name: Run tests
+        run: pnpm test
 
-    - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      - name: Run lint
+        run: pnpm run lint
 
-    - name: Run tests
-      run: pnpm test
+      - name: Build project
+        run: pnpm run build
 
-    - name: Run linting
-      run: pnpm run lint
+      # ---------- NPMJS.ORG PUBLISH ----------
+      - name: Prepare .npmrc for npmjs.org
+        if: ${{ github.event.inputs.publish_to_npm == 'true' }}
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-    - name: Build project
-      run: pnpm run build
+      - name: Publish to npm
+        if: ${{ github.event.inputs.publish_to_npm == 'true' }}
+        run: npm publish --access public
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-    # Version bump - use npm for package.json manipulation since it's standard
-    - name: Bump version (patch/minor/major)
-      if: github.event.inputs.version != 'prerelease'
-      run: npm version ${{ github.event.inputs.version }} --no-git-tag-version
+      # ---------- GITHUB PACKAGES PUBLISH ----------
+      - name: Backup package.json for GitHub Packages
+        if: ${{ github.event.inputs.publish_to_github == 'true' }}
+        run: cp package.json package.json.backup
 
-    - name: Bump version (prerelease)
-      if: github.event.inputs.version == 'prerelease'
-      run: npm version prerelease --preid=${{ github.event.inputs.tag }} --no-git-tag-version
+      - name: Rewrite package.json for GitHub Packages
+        if: ${{ github.event.inputs.publish_to_github == 'true' }}
+        run: |
+          jq '.name = "@devints47/pixel-forge" | .bin = {
+            "pixel-forge": "dist/src/cli/index.js",
+            "pforge": "dist/src/cli/index.js"
+          }' package.json > package.json.tmp
+          mv package.json.tmp package.json
 
-    - name: Get package version
-      id: package-version
-      run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      - name: Prepare .npmrc for GitHub Packages
+        if: ${{ github.event.inputs.publish_to_github == 'true' }}
+        run: |
+          echo "@devints47:registry=https://npm.pkg.github.com" > ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> ~/.npmrc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    # Generate changelog and commit version bump
-    - name: Generate changelog and commit changes
-      run: |
-        npx conventional-changelog -p angular -i CHANGELOG.md -s
-        git add CHANGELOG.md package.json pnpm-lock.yaml
-        git commit -m "chore(release): v${{ steps.package-version.outputs.version }}"
-        git push origin HEAD
+      - name: Publish to GitHub Packages
+        if: ${{ github.event.inputs.publish_to_github == 'true' }}
+        run: npm publish --access public --registry=https://npm.pkg.github.com
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Create git tag
-      run: |
-        git tag v${{ steps.package-version.outputs.version }}
-        git push origin v${{ steps.package-version.outputs.version }}
+      - name: Restore package.json
+        if: ${{ github.event.inputs.publish_to_github == 'true' }}
+        run: mv package.json.backup package.json
 
-    # Publish to npm registry
-    - name: Publish to npm
-      if: github.event.inputs.publish_to_npm == 'true'
-      run: npm publish
-      env:
-        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-    # Publish to GitHub Packages
-    - name: Setup Node.js for GitHub Packages
-      if: github.event.inputs.publish_to_github == 'true'
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        registry-url: 'https://npm.pkg.github.com'
-        cache: 'pnpm'
-
-    - name: Configure package for GitHub Packages
-      if: github.event.inputs.publish_to_github == 'true'
-      run: |
-        cp package.json package.json.backup
-        jq '.name = "@devints47/pixel-forge"' package.json > package.json.tmp
-        mv package.json.tmp package.json
-        jq '.bin = {
-          "pixel-forge": "dist/cli/index.js",
-          "pforge": "dist/cli/index.js"
-        }' package.json > package.json.tmp
-        mv package.json.tmp package.json
-
-    - name: Publish to GitHub Packages
-      if: github.event.inputs.publish_to_github == 'true'
-      run: npm publish
-      env:
-        NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Restore original package.json
-      if: github.event.inputs.publish_to_github == 'true'
-      run: mv package.json.backup package.json
-
-    # GitHub Release
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: v${{ steps.package-version.outputs.version }}
-        name: Release v${{ steps.package-version.outputs.version }}
-        body_path: CHANGELOG.md
-        draft: false
-        prerelease: ${{ github.event.inputs.version == 'prerelease' }}
-
-    # Summary Output
-    - name: Summary
-      run: |
-        echo "## Publication Summary" >> $GITHUB_STEP_SUMMARY
-        echo "- **Version**: v${{ steps.package-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **npm**: ${{ github.event.inputs.publish_to_npm == 'true' && '✅ Published' || '❌ Skipped' }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **GitHub Packages**: ${{ github.event.inputs.publish_to_github == 'true' && '✅ Published' || '❌ Skipped' }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Changelog**: CHANGELOG.md updated" >> $GITHUB_STEP_SUMMARY

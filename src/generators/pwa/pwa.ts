@@ -75,12 +75,14 @@ export class PWAGenerator {
       const processor = new ImageProcessor(this.sourceImage);
       const outputPath = path.join(this.config.output.path, `pwa-${size}x${size}.png`);
 
-      await processor
-        .resize(size, size, { 
-          fit: 'contain', 
-          background: this.config.backgroundColor 
-        })
-        .save(outputPath);
+      const resizedFile = await processor.resize(size, size, { 
+        fit: 'contain', 
+        background: this.config.backgroundColor 
+      });
+      
+      const finalProcessor = new ImageProcessor(resizedFile);
+      await finalProcessor.save(outputPath);
+      await processor.cleanup();
     }
 
     // Generate maskable icons (with safe area)
@@ -102,12 +104,14 @@ export class PWAGenerator {
       // const safeSize = Math.round(size * 0.6);
       // const padding = Math.round((size - safeSize) / 2);
 
-      await processor
-        .resize(size, size, { 
-          fit: 'contain', 
-          background: this.config.backgroundColor 
-        })
-        .save(outputPath);
+      const resizedFile = await processor.resize(size, size, { 
+        fit: 'contain', 
+        background: this.config.backgroundColor 
+      });
+      
+      const finalProcessor = new ImageProcessor(resizedFile);
+      await finalProcessor.save(outputPath);
+      await processor.cleanup();
     }
   }
 
@@ -121,12 +125,14 @@ export class PWAGenerator {
       const processor = new ImageProcessor(this.sourceImage);
       const outputPath = path.join(this.config.output.path, `apple-icon-${size}x${size}.png`);
 
-      await processor
-        .resize(size, size, { 
-          fit: 'contain', 
-          background: this.config.backgroundColor 
-        })
-        .save(outputPath);
+      const resizedFile = await processor.resize(size, size, { 
+        fit: 'contain', 
+        background: this.config.backgroundColor 
+      });
+      
+      const finalProcessor = new ImageProcessor(resizedFile);
+      await finalProcessor.save(outputPath);
+      await processor.cleanup();
     }
   }
 
@@ -140,12 +146,14 @@ export class PWAGenerator {
       const processor = new ImageProcessor(this.sourceImage);
       const outputPath = path.join(this.config.output.path, `android-icon-${size}x${size}.png`);
 
-      await processor
-        .resize(size, size, { 
-          fit: 'contain', 
-          background: this.config.backgroundColor 
-        })
-        .save(outputPath);
+      const resizedFile = await processor.resize(size, size, { 
+        fit: 'contain', 
+        background: this.config.backgroundColor 
+      });
+      
+      const finalProcessor = new ImageProcessor(resizedFile);
+      await finalProcessor.save(outputPath);
+      await processor.cleanup();
     }
   }
 
@@ -187,12 +195,14 @@ export class PWAGenerator {
     // but since we're using 'contain' fit, the image will be properly sized
     // const logoSize = Math.min(width, height) * 0.3; // Logo is 30% of smallest dimension
 
-    await processor
-      .resize(width, height, { 
-        fit: 'contain', 
-        background: this.config.backgroundColor 
-      })
-      .save(outputPath);
+    const resizedFile = await processor.resize(width, height, { 
+      fit: 'contain', 
+      background: this.config.backgroundColor 
+    });
+    
+    const finalProcessor = new ImageProcessor(resizedFile);
+    await finalProcessor.save(outputPath);
+    await processor.cleanup();
   }
 
   /**

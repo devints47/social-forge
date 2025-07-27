@@ -42,22 +42,24 @@ export class TwitterGenerator {
   }
 
   /**
-   * Generate standard Twitter card image (1200x600)
+   * Generate standard Twitter image (1200x675)
    */
   private async generateStandardImage(title?: string, description?: string, template?: 'basic' | 'gradient' | 'custom'): Promise<void> {
     const processor = new ImageProcessor(this.sourceImage);
-    const outputPath = path.join(this.config.output.path, 'twitter.png');
+    const outputPath = path.join(this.config.output.path, 'twitter-card.png');
 
-    await processor
-      .createSocialPreview({
-        width: ImageSizes.social.twitter.width,
-        height: ImageSizes.social.twitter.height,
-        title,
-        description,
-        template,
-        background: this.config.backgroundColor
-      })
-      .save(outputPath);
+    const socialFile = await processor.createSocialPreview({
+      width: ImageSizes.social.twitter.width,
+      height: ImageSizes.social.twitter.height,
+      title,
+      description,
+      template,
+      background: this.config.backgroundColor
+    });
+    
+    const finalProcessor = new ImageProcessor(socialFile);
+    await finalProcessor.save(outputPath);
+    await processor.cleanup();
   }
 
   /**
@@ -67,16 +69,18 @@ export class TwitterGenerator {
     const processor = new ImageProcessor(this.sourceImage);
     const outputPath = path.join(this.config.output.path, 'twitter-square.png');
 
-    await processor
-      .createSocialPreview({
-        width: ImageSizes.social.twitterSquare.width,
-        height: ImageSizes.social.twitterSquare.height,
-        title,
-        description,
-        template,
-        background: this.config.backgroundColor
-      })
-      .save(outputPath);
+    const socialFile = await processor.createSocialPreview({
+      width: ImageSizes.social.twitterSquare.width,
+      height: ImageSizes.social.twitterSquare.height,
+      title,
+      description,
+      template,
+      background: this.config.backgroundColor
+    });
+    
+    const finalProcessor = new ImageProcessor(socialFile);
+    await finalProcessor.save(outputPath);
+    await processor.cleanup();
   }
 
   /**

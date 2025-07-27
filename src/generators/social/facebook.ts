@@ -41,22 +41,24 @@ export class FacebookGenerator {
   }
 
   /**
-   * Generate standard Facebook OpenGraph image (1200x630)
+   * Generate standard Facebook image (1200x630)
    */
   private async generateStandardImage(title?: string, description?: string, template?: 'basic' | 'gradient' | 'custom'): Promise<void> {
     const processor = new ImageProcessor(this.sourceImage);
-    const outputPath = path.join(this.config.output.path, 'facebook.png');
+    const outputPath = path.join(this.config.output.path, 'facebook-og.png');
 
-    await processor
-      .createSocialPreview({
-        width: ImageSizes.social.facebook.width,
-        height: ImageSizes.social.facebook.height,
-        title,
-        description,
-        template,
-        background: this.config.backgroundColor
-      })
-      .save(outputPath);
+    const socialFile = await processor.createSocialPreview({
+      width: ImageSizes.social.facebook.width,
+      height: ImageSizes.social.facebook.height,
+      title,
+      description,
+      template,
+      background: this.config.backgroundColor
+    });
+    
+    const finalProcessor = new ImageProcessor(socialFile);
+    await finalProcessor.save(outputPath);
+    await processor.cleanup();
   }
 
   /**
@@ -66,16 +68,18 @@ export class FacebookGenerator {
     const processor = new ImageProcessor(this.sourceImage);
     const outputPath = path.join(this.config.output.path, 'facebook-square.png');
 
-    await processor
-      .createSocialPreview({
-        width: ImageSizes.social.facebookSquare.width,
-        height: ImageSizes.social.facebookSquare.height,
-        title,
-        description,
-        template,
-        background: this.config.backgroundColor
-      })
-      .save(outputPath);
+    const socialFile = await processor.createSocialPreview({
+      width: ImageSizes.social.facebookSquare.width,
+      height: ImageSizes.social.facebookSquare.height,
+      title,
+      description,
+      template,
+      background: this.config.backgroundColor
+    });
+    
+    const finalProcessor = new ImageProcessor(socialFile);
+    await finalProcessor.save(outputPath);
+    await processor.cleanup();
   }
 
   /**

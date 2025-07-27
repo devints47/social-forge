@@ -5,20 +5,20 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "pixel-forge": "dist/cli/index.js",
-    "pforge": "dist/cli/index.js"
+    "pixel-forge": "dist/src/cli/index.js",
+    "pforge": "dist/src/cli/index.js"
   },
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
-    "dev": "npm run build && node dist/cli/index.js",
+    "dev": "pnpm run build && node dist/cli/index.js",
     "start": "node dist/cli/index.js",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint",
+    "prepare": "pnpm run build",
+    "prepublishOnly": "pnpm test && pnpm run lint",
     "clean": "rimraf dist"
   },
   "keywords": [
@@ -57,39 +57,36 @@
   },
   "homepage": "https://github.com/devints47/pixel-forge#readme",
   "devDependencies": {
-    "@types/jest": "^30.0.0",
-    "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
+    "@eslint/js": "^9.19.0",
+    "@jest/globals": "^30.0.5",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.2",
     "conventional-changelog-cli": "^5.0.0",
-    "eslint": "^8.56.0",
+    "eslint": "^9.19.0",
     "jest": "^29.7.0",
-    "prettier": "^3.0.0",
-    "rimraf": "^5.0.0",
-    "ts-jest": "^29.1.2",
-    "typescript": "~5.3.3"
+    "prettier": "^3.4.2",
+    "rimraf": "^6.0.1",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.38.0"
   },
   "dependencies": {
-    "@types/sharp": "^0.31.1",
-    "chalk": "^5.0.0",
-    "commander": "^11.1.0",
-    "conf": "^11.0.0",
-    "ora": "^7.0.0",
-    "sharp": "^0.33.5"
+    "chalk": "^5.3.0",
+    "command-exists": "^1.2.9",
+    "commander": "^12.1.0",
+    "conf": "^13.0.1",
+    "execa": "^9.5.2",
+    "ora": "^8.1.1"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.18.0"
   },
   "funding": {
     "type": "github",
     "url": "https://github.com/sponsors/devints47"
   },
   "files": [
-    "dist/**/*.js",
-    "dist/**/*.d.ts",
-    "!dist/**/__tests__/**",
-    "!dist/**/*.test.*",
-    "!dist/**/*.spec.*",
+    "dist",
     "README.md",
     "LICENSE"
   ]

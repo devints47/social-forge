@@ -1,12 +1,29 @@
-import sharp from 'sharp';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
 import path from 'path';
 import { promises as fs } from 'fs';
 
+const execFileAsync = promisify(execFile);
+
+// Global flag to enable mock mode for testing
+let MOCK_MODE = false;
+
+// Enable mock mode for testing
+export function enableMockMode(): void {
+  MOCK_MODE = true;
+}
+
+// Disable mock mode
+export function disableMockMode(): void {
+  MOCK_MODE = false;
+}
+
 export interface ImageProcessorOptions {
   quality?: number;
-  format?: 'png' | 'jpeg' | 'jpg' | 'webp' | 'avif' | 'tiff' | 'tif' | 'gif' | 'heif' | 'svg';
+  format?: 'png' | 'jpeg' | 'jpg' | 'webp' | 'avif' | 'tiff' | 'tif' | 'gif' | 'heif' | 'svg' | 'ico';
   background?: string;
   fit?: 'cover' | 'contain' | 'fill';
+  zoom?: number; // Zoom factor (e.g., 1.1 for 10% zoom)
 }
 
 export interface TextOptions {
@@ -23,34 +40,155 @@ export const SUPPORTED_INPUT_FORMATS = ['.png', '.jpg', '.jpeg', '.webp', '.avif
 
 export class ImageProcessor {
   private source: string;
-  private sharp: sharp.Sharp;
+  private tempFiles: string[] = [];
 
   constructor(source: string) {
     this.source = source;
-    this.sharp = sharp(source);
   }
 
   /**
-   * Resize image to specific dimensions
+   * Check if ImageMagick is available
    */
-  resize(width: number, height: number, options: ImageProcessorOptions = {}): ImageProcessor {
+  static async checkImageMagick(): Promise<boolean> {
+    if (MOCK_MODE) {
+      return true; // Always return true in mock mode
+    }
+    
+    try {
+      await execFileAsync('magick', ['-version']);
+      return true;
+    } catch (_error) {
+      try {
+        // Fallback to legacy 'convert' command
+        await execFileAsync('convert', ['-version']);
+        return true;
+      } catch (_fallbackError) {
+        return false;
+      }
+    }
+  }
+
+  /**
+   * Get the appropriate ImageMagick command
+   */
+  private static async getMagickCommand(): Promise<string> {
+    if (MOCK_MODE) {
+      return 'mock-magick'; // Return dummy command in mock mode
+    }
+    
+    try {
+      await execFileAsync('magick', ['-version']);
+      return 'magick';
+    } catch (_error) {
+      // Fallback to legacy 'convert' command
+      return 'convert';
+    }
+  }
+
+  /**
+   * Create a mock output file for testing
+   */
+  private async createMockOutputFile(outputPath?: string): Promise<string> {
+    // Create a temp path if none provided
+    const tempOutput = outputPath || path.join(
+      path.dirname(this.source), 
+      `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.png`
+    );
+    
+    // In mock mode, just copy the source file to the output path
+    try {
+      // Ensure directory exists
+      await fs.mkdir(path.dirname(tempOutput), { recursive: true });
+      
+      // Copy source to output in mock mode
+      await fs.copyFile(this.source, tempOutput);
+      
+      if (!outputPath) {
+        this.tempFiles.push(tempOutput);
+      }
+      
+      return tempOutput;
+    } catch (_error) {
+      // If copy fails (e.g., source doesn't exist), create an empty file
+      await fs.writeFile(tempOutput, '');
+      
+      if (!outputPath) {
+        this.tempFiles.push(tempOutput);
+      }
+      
+      return tempOutput;
+    }
+  }
+
+  /**
+   * Resize image to specific dimensions using ImageMagick
+   */
+  async resize(width: number, height: number, options: ImageProcessorOptions = {}): Promise<string> {
     const {
       fit = 'cover',
-      background = { r: 0, g: 0, b: 0, alpha: 0 }
+      background = 'transparent',
+      zoom = 1.0
     } = options;
 
-    this.sharp = this.sharp.resize(width, height, {
-      fit,
-      background
-    });
+    // Use mock implementation in test mode
+    if (MOCK_MODE) {
+      return this.createMockOutputFile();
+    }
 
-    return this;
+    const tempOutput = path.join(path.dirname(this.source), `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.png`);
+    this.tempFiles.push(tempOutput);
+
+    const magickCmd = await ImageProcessor.getMagickCommand();
+    const args: string[] = [];
+
+    // Input file
+    args.push(this.source);
+
+    // Apply high-quality filtering for better transparency handling
+    args.push('-filter', 'lanczos');
+
+    // Apply zoom if specified (with transparency preservation)
+    if (zoom !== 1.0) {
+      const zoomPercent = Math.round(zoom * 100);
+      args.push('-resize', `${zoomPercent}%`);
+    }
+
+    // Handle different fit modes with transparency preservation
+    if (fit === 'contain') {
+      args.push('-resize', `${width}x${height}`);
+      args.push('-gravity', 'center');
+      // Preserve transparency during extent operation
+      if (background === 'transparent') {
+        args.push('-background', 'none');
+      } else {
+        args.push('-background', background);
+      }
+      args.push('-extent', `${width}x${height}`);
+    } else if (fit === 'cover') {
+      args.push('-resize', `${width}x${height}^`);
+      args.push('-gravity', 'center');
+      args.push('-extent', `${width}x${height}`);
+    } else {
+      // fill mode
+      args.push('-resize', `${width}x${height}!`);
+    }
+
+    // Output file
+    args.push(tempOutput);
+
+    try {
+      await execFileAsync(magickCmd, args);
+      return tempOutput;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`ImageMagick resize failed: ${errorMessage}`);
+    }
   }
 
   /**
-   * Add text overlay to image
+   * Add text overlay to image using ImageMagick
    */
-  async addText(options: TextOptions): Promise<ImageProcessor> {
+  async addText(inputFile: string, options: TextOptions): Promise<string> {
     const {
       text,
       fontSize = 32,
@@ -59,57 +197,78 @@ export class ImageProcessor {
       offset = { x: 0, y: 0 }
     } = options;
 
-    // Create text overlay using SVG
-    const svg = `
-      <svg width="100%" height="100%">
-        <style>
-          .text { font: ${fontSize}px sans-serif; fill: ${color}; }
-        </style>
-        <text
-          x="50%"
-          y="${position === 'top' ? '10%' : position === 'bottom' ? '90%' : '50%'}"
-          dx="${offset.x}"
-          dy="${offset.y}"
-          text-anchor="middle"
-          class="text"
-        >${text}</text>
-      </svg>
-    `;
+    // Use mock implementation in test mode
+    if (MOCK_MODE) {
+      return this.createMockOutputFile();
+    }
 
-    // Composite text over image
-    this.sharp = this.sharp.composite([{
-      input: Buffer.from(svg),
-      top: 0,
-      left: 0
-    }]);
+    const tempOutput = path.join(path.dirname(this.source), `temp-text-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.png`);
+    this.tempFiles.push(tempOutput);
 
-    return this;
+    const magickCmd = await ImageProcessor.getMagickCommand();
+    const args: string[] = [];
+
+    args.push(inputFile);
+    args.push('-fill', color);
+    args.push('-pointsize', fontSize.toString());
+    args.push('-gravity', position === 'center' ? 'center' : position === 'top' ? 'north' : 'south');
+
+    // Add offset if specified
+    if (offset.x !== 0 || offset.y !== 0) {
+      args.push('-geometry', `+${offset.x}+${offset.y}`);
+    }
+
+    args.push('-annotate', '0', text);
+    args.push(tempOutput);
+
+    try {
+      await execFileAsync(magickCmd, args);
+      return tempOutput;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`ImageMagick text overlay failed: ${errorMessage}`);
+    }
   }
 
   /**
-   * Apply color overlay or tint
+   * Apply color overlay or tint using ImageMagick
    */
-  applyColor(color: string, opacity: number = 0.5): ImageProcessor {
-    // Create color overlay
-    const overlay = Buffer.from([
-      Math.round(opacity * 255),
-      Math.round(opacity * 255),
-      Math.round(opacity * 255),
-      Math.round(opacity * 255)
-    ]);
+  async applyColor(inputFile: string, color: string, opacity: number = 0.5): Promise<string> {
+    // Use mock implementation in test mode
+    if (MOCK_MODE) {
+      return this.createMockOutputFile();
+    }
 
-    this.sharp = this.sharp.composite([{
-      input: overlay,
-      blend: 'overlay'
-    }]);
+    const tempOutput = path.join(path.dirname(this.source), `temp-color-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.png`);
+    this.tempFiles.push(tempOutput);
 
-    return this;
+    const magickCmd = await ImageProcessor.getMagickCommand();
+    const args = [
+      inputFile,
+      '-fill', color,
+      '-colorize', `${Math.round(opacity * 100)}%`,
+      tempOutput
+    ];
+
+    try {
+      await execFileAsync(magickCmd, args);
+      return tempOutput;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`ImageMagick color overlay failed: ${errorMessage}`);
+    }
   }
 
   /**
-   * Save image to file
+   * Save image to file with format conversion and transparency preservation
    */
   async save(outputPath: string, options: ImageProcessorOptions = {}): Promise<void> {
+    // Use mock implementation in test mode
+    if (MOCK_MODE) {
+      await this.createMockOutputFile(outputPath);
+      return;
+    }
+    
     // Get format from output path or options
     let format = path.extname(outputPath).slice(1).toLowerCase();
     if (options.format) {
@@ -125,16 +284,58 @@ export class ImageProcessor {
     // Ensure output directory exists
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
 
-    // Process and save image with format-specific options
-    if (['jpeg', 'png', 'webp', 'avif', 'tiff', 'gif', 'heif'].includes(format)) {
-      await this.sharp
-        .toFormat(format as keyof sharp.FormatEnum, { quality })
-        .toFile(outputPath);
-    } else {
-      // Default to PNG for unsupported output formats
-      await this.sharp
-        .toFormat('png', { quality })
-        .toFile(outputPath);
+    const magickCmd = await ImageProcessor.getMagickCommand();
+    const args: string[] = [];
+
+    args.push(this.source);
+
+    // PNG-specific transparency preservation (critical fix from debugging)
+    if (format === 'png') {
+      // Force RGBA transparency preservation - prevents 8-bit colormap conversion
+      args.push('-define', 'png:color-type=6');
+      
+      // Ensure proper bit depth for transparency
+      args.push('-define', 'png:bit-depth=8');
+      
+      // Optimize PNG compression
+      if (quality < 95) {
+        // Use adaptive filtering for better compression
+        args.push('-define', 'png:compression-filter=5');
+        args.push('-define', 'png:compression-level=9');
+      }
+      
+      // Ensure full range for web images
+      args.push('-define', 'png:format=png32');
+    }
+
+    // Set quality for lossy formats
+    if (['jpeg', 'webp', 'avif'].includes(format)) {
+      args.push('-quality', quality.toString());
+    }
+
+    // ICO format requires special handling
+    if (format === 'ico') {
+      // Create proper ICO file with multiple sizes
+      args.push('-define', 'icon:auto-resize=256,128,64,48,32,16');
+      args.push('-compress', 'zip');
+    }
+
+    // WebP format optimization
+    if (format === 'webp') {
+      args.push('-define', 'webp:alpha-quality=100');
+      if (options.background === 'transparent') {
+        args.push('-define', 'webp:alpha-compression=1');
+      }
+    }
+
+    // Set output format with proper specification
+    args.push(`${format.toUpperCase()}:${outputPath}`);
+
+    try {
+      await execFileAsync(magickCmd, args);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`ImageMagick save failed: ${errorMessage}`);
     }
   }
 
@@ -142,18 +343,50 @@ export class ImageProcessor {
    * Generate multiple sizes of the same image
    */
   async generateSizes(sizes: Array<{ width: number; height: number; name: string }>, outputDir: string, options: ImageProcessorOptions = {}): Promise<void> {
+    // In mock mode, skip ImageMagick check
+    if (!MOCK_MODE) {
+      // Check ImageMagick availability first
+      const isAvailable = await ImageProcessor.checkImageMagick();
+      if (!isAvailable) {
+        throw new Error(
+          'ImageMagick is not installed or not found in PATH. ' +
+          'Please install ImageMagick:\n' +
+          '- macOS: brew install imagemagick\n' +
+          '- Ubuntu/Debian: apt-get install imagemagick\n' +
+          '- Windows: choco install imagemagick or download from https://imagemagick.org'
+        );
+      }
+    }
+
+    const results: Promise<void>[] = [];
+
     for (const size of sizes) {
-      const processor = new ImageProcessor(this.source);
-      await processor
-        .resize(size.width, size.height, options)
-        .save(path.join(outputDir, size.name));
+      const promise = (async () => {
+        try {
+          const resizedFile = await this.resize(size.width, size.height, options);
+          const processor = new ImageProcessor(resizedFile);
+          await processor.save(path.join(outputDir, size.name), options);
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          throw new Error(`Failed to generate size ${size.width}x${size.height}: ${errorMessage}`);
+        }
+      })();
+      
+      results.push(promise);
+    }
+
+    try {
+      await Promise.all(results);
+    } finally {
+      // Clean up temporary files
+      await this.cleanup();
     }
   }
 
   /**
    * Create a social media preview with template
    */
-  createSocialPreview(options: {
+  async createSocialPreview(options: {
     width: number;
     height: number;
     title?: string;
@@ -161,7 +394,7 @@ export class ImageProcessor {
     logo?: string;
     template?: 'basic' | 'gradient' | 'custom';
     background?: string;
-  }): ImageProcessor {
+  }): Promise<string> {
     const {
       width,
       height,
@@ -171,20 +404,25 @@ export class ImageProcessor {
       background = '#000000'
     } = options;
 
-    // Resize base image
-    this.resize(width, height, {
+    // Use mock implementation in test mode
+    if (MOCK_MODE) {
+      return this.createMockOutputFile();
+    }
+
+    // Start with resized base image
+    let currentFile = await this.resize(width, height, {
       fit: 'cover',
       background
     });
 
     // Add gradient overlay if template is gradient
     if (template === 'gradient') {
-      this.applyColor('linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 100%)', 0.7);
+      currentFile = await this.applyColor(currentFile, 'black', 0.4);
     }
 
     // Add title if provided
     if (title) {
-      this.addText({
+      currentFile = await this.addText(currentFile, {
         text: title,
         fontSize: Math.floor(height / 10),
         position: 'center',
@@ -194,7 +432,7 @@ export class ImageProcessor {
 
     // Add description if provided
     if (description) {
-      this.addText({
+      currentFile = await this.addText(currentFile, {
         text: description,
         fontSize: Math.floor(height / 20),
         position: 'center',
@@ -202,7 +440,23 @@ export class ImageProcessor {
       });
     }
 
-    return this;
+    return currentFile;
+  }
+
+  /**
+   * Clean up temporary files
+   */
+  async cleanup(): Promise<void> {
+    const cleanupPromises = this.tempFiles.map(async (file) => {
+      try {
+        await fs.unlink(file);
+      } catch (_error) {
+        // Ignore cleanup errors
+      }
+    });
+
+    await Promise.allSettled(cleanupPromises);
+    this.tempFiles = [];
   }
 }
 

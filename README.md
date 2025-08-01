@@ -451,7 +451,6 @@ await generator.generate({
 
 ## 📊 Performance & Optimization
 
-- **Zero External Dependencies** - No ImageMagick, Potrace, or system binaries
 - **Fast Generation** - Processes 25+ images in under 2 seconds
 - **Smart Caching** - Reuses processed images when possible
 - **Memory Efficient** - Streams processing for large images
@@ -558,8 +557,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## 🔧 Technical Details
 
 ### **Advanced Transparency Preservation**
-
-Our implementation uses cutting-edge ImageMagick techniques discovered through extensive debugging:
 
 - **`-define png:color-type=6`** - Forces RGBA format, prevents 8-bit colormap conversion
 - **`-define png:bit-depth=8`** - Ensures proper bit depth for transparency
